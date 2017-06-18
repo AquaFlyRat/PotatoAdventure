@@ -1,3 +1,0 @@
-PATH+=":/z/Lander/Libs/libpng-1.6.23"
-PATH+=":/z/Lander/Libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32"
-configure CFLAGS="-I/z/Lander/Libs/libpng-1.6.23 -O3" LDFLAGS="-L/z/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/lib -L/z/lander/libs/libpng-1.6.23/ -static -s" LIBS="-lmingw32 -lSDL2main -lSDL2 -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid" --disable-png-shared --with-sdl-prefix=/z/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32
