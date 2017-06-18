@@ -1,0 +1,10 @@
+language: cpp
+os:
+  - linux
+  - osx
+compiler:
+  - gcc
+script:
+  - cd scripts
+  - ./cbp2make.linux-x86 -in ../prj.cbp -out Makefile
+  - make
