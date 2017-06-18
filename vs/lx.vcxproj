@@ -28,7 +28,6 @@
     <ClCompile Include="..\src\network.cpp" />
     <ClCompile Include="..\src\strings.cpp" />
     <ClCompile Include="..\src\system.cpp" />
-    <ClCompile Include="..\src\test.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
     <ClCompile Include="..\src\window.cpp" />
   </ItemGroup>
