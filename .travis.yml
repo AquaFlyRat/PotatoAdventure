@@ -6,6 +6,5 @@ os:
 compiler:
   - gcc
 script:
-  - cd scripts
-  - sudo ./cbp2make.linux-x86 -in ../prj.cbp -out Makefile
+  - sudo scripts/cbp2make.linux-x86 -in ../prj.cbp -out Makefile
   - make
