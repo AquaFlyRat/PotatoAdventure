@@ -9,4 +9,5 @@ vs/bin/
 vs/obj/
 vs/.vs
 vs/*.vcxproj.user
+bin/
 
