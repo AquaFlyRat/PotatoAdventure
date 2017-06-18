@@ -1,0 +1,57 @@
+#include "logic.h"
+
+namespace Logic
+{
+    namespace Models
+    {
+        extern Graphics::Model<Layouts::World> *ship2;
+        extern Graphics::Model<Layouts::World> *ship3;
+        extern Graphics::Model<Layouts::World> *ship4;
+        extern Graphics::Model<Layouts::World> *ship5;
+        extern Graphics::Model<Layouts::World> *ship6;
+        extern Graphics::Model<Layouts::World> *bullet;
+        extern Graphics::Model<Layouts::World> *box;
+        extern Graphics::Model<Layouts::World> *explosion;
+    }
+
+    void LoadModels()
+    {
+        #define MATERIAL_White(a,b,c) {a, (b-a).cross(c-a), {0,0}, {0.9,0.9,0.9,1}, {1,1}, 0},\
+                                      {b, (b-a).cross(c-a), {0,0}, {0.9,0.9,0.9,1}, {1,1}, 0},\
+                                      {c, (b-a).cross(c-a), {0,0}, {0.9,0.9,0.9,1}, {1,1}, 0}
+        #define MATERIAL_Dark(a,b,c)  {a, (b-a).cross(c-a), {0,0}, {0.25,0.25,0.25,1}, {1,1}, 0},\
+                                      {b, (b-a).cross(c-a), {0,0}, {0.25,0.25,0.25,1}, {1,1}, 0},\
+                                      {c, (b-a).cross(c-a), {0,0}, {0.25,0.25,0.25,1}, {1,1}, 0}
+        #define MATERIAL_Cyan(a,b,c)  {a, (b-a).cross(c-a), {0,0}, fvec4{44,190,234,255}/255, {1,1}, 0},\
+                                      {b, (b-a).cross(c-a), {0,0}, fvec4{44,190,234,255}/255, {1,1}, 0},\
+                                      {c, (b-a).cross(c-a), {0,0}, fvec4{44,190,234,255}/255, {1,1}, 0}
+
+        #define LOAD_TO Models::ship2
+        #include "models/ship2.hpp"
+
+        #define LOAD_TO Models::ship3
+        #include "models/ship3.hpp"
+
+        #define LOAD_TO Models::ship4
+        #include "models/ship4.hpp"
+
+        #define LOAD_TO Models::ship5
+        #include "models/ship5.hpp"
+
+        #define LOAD_TO Models::ship6
+        #include "models/ship6.hpp"
+
+        #define MATERIAL_PureWhite(a,b,c) {a, (b-a).cross(c-a), {0,0}, {0.9,0.9,0.9,1}, {1,1}, 0},\
+                                          {b, (b-a).cross(c-a), {0,0}, {0.9,0.9,0.9,1}, {1,1}, 0},\
+                                          {c, (b-a).cross(c-a), {0,0}, {0.9,0.9,0.9,1}, {1,1}, 0}
+
+        #define LOAD_TO Models::bullet
+        #include "models/bullet.hpp"
+
+        #define LOAD_TO Models::box
+        #include "models/box.hpp"
+
+        #define LOAD_TO Models::explosion
+        #include "models/explosion.hpp"
+    }
+}

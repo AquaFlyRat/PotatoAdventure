@@ -1,0 +1,12 @@
+android-project/obj/*
+android-project/libs/*
+android-project/apk/*
+bin/*.exe
+obj/
+*.depend
+*.layout
+vs/bin/
+vs/obj/
+vs/.vs
+vs/*.vcxproj.user
+

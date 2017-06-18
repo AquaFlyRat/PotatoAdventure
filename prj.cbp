@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="0engine" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Development">
+				<Option output="bin/app" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-D_GLIBCXX_DEBUG" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/app" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-flto" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-flto" />
+				</Linker>
+			</Target>
+			<Target title="Debug">
+				<Option output="bin/app" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-D_GLIBCXX_DEBUG" />
+				</Compiler>
+			</Target>
+			<Target title="Profile">
+				<Option output="bin/app" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-pg" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg -lgmon" />
+				</Linker>
+			</Target>
+			<Target title="Development (Android)">
+				<Option output="bin/app" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-D_GLIBCXX_DEBUG" />
+					<Add option="-DASSUME_ANDROID" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-pedantic-errors" />
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="-std=c++17" />
+			<Add directory="lib/include" />
+		</Compiler>
+		<Linker>
+			<Add option="-static" />
+			<Add library="mingw32" />
+			<Add library="SDL2main" />
+			<Add library="SDL2" />
+			<Add library="SDL2_image" />
+			<Add library="SDL2_net" />
+			<Add library="SDL2_ttf" />
+			<Add library="m" />
+			<Add library="dinput8" />
+			<Add library="dxguid" />
+			<Add library="dxerr8" />
+			<Add library="user32" />
+			<Add library="gdi32" />
+			<Add library="winmm" />
+			<Add library="imm32" />
+			<Add library="ole32" />
+			<Add library="oleaut32" />
+			<Add library="shell32" />
+			<Add library="version" />
+			<Add library="uuid" />
+			<Add library="OpenAL32.dll" />
+			<Add library="zlibstatic" />
+			<Add library="ws2_32" />
+			<Add library="iphlpapi" />
+			<Add library="vorbisfile" />
+			<Add library="vorbisenc" />
+			<Add library="vorbis" />
+			<Add library="ogg" />
+			<Add library="freetype" />
+			<Add library="png16" />
+			<Add directory="lib" />
+		</Linker>
+		<Unit filename="lib/glfl.cpp" />
+		<Unit filename="src/audio.cpp" />
+		<Unit filename="src/audio.h" />
+		<Unit filename="src/exceptions.h" />
+		<Unit filename="src/graphics.cpp" />
+		<Unit filename="src/graphics.h" />
+		<Unit filename="src/input.cpp" />
+		<Unit filename="src/input.h" />
+		<Unit filename="src/input_enums.h" />
+		<Unit filename="src/lib/al.h" />
+		<Unit filename="src/lib/gl.h" />
+		<Unit filename="src/lib/ogg.h" />
+		<Unit filename="src/lib/sdl.h" />
+		<Unit filename="src/lib/sdlimg.h" />
+		<Unit filename="src/lib/sdlnet.h" />
+		<Unit filename="src/lib/sdlttf.h" />
+		<Unit filename="src/lib/vorbis.h" />
+		<Unit filename="src/lib/z.h" />
+		<Unit filename="src/logic.cpp" />
+		<Unit filename="src/master.h" />
+		<Unit filename="src/math.h" />
+		<Unit filename="src/network.cpp" />
+		<Unit filename="src/network.h" />
+		<Unit filename="src/os.h" />
+		<Unit filename="src/renderer2d.h" />
+		<Unit filename="src/system.cpp" />
+		<Unit filename="src/system.h" />
+		<Unit filename="src/utils.cpp" />
+		<Unit filename="src/utils.h" />
+		<Unit filename="src/window.cpp" />
+		<Unit filename="src/window.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

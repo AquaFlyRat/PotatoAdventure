@@ -1,0 +1,406 @@
+IMG_tif.lo: IMG_tif.c \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdio.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/crtdefs.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_mac.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_secapi.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/vadefs.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/sdks/_mingw_directx.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/sdks/_mingw_ddk.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_print_push.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_off_t.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/swprintf.inl \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/sec_api/stdio_s.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_print_pop.h \
+ SDL_image.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_main.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_stdinc.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_config.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_platform.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/begin_code.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/close_code.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/sys/types.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdlib.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include-fixed/limits.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include-fixed/syslimits.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/limits.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/sec_api/stdlib_s.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/malloc.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/stddef.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/stddef.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/stdarg.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdarg.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_stdarg.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/string.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/sec_api/string_s.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/strings.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/inttypes.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/stdint.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdint.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_assert.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_atomic.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_audio.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_error.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_endian.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_mutex.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_thread.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/process.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_rwops.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_clipboard.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_cpuinfo.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/intrin.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/setjmp.h \
+ z:/Lander/MinGW-w64/i686-w64-mingw32/include/psdk_inc/intrin-impl.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/x86intrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/ia32intrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xmmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mm_malloc.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/emmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/pmmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/tmmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/ammintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/smmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/popcntintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/wmmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/immintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avxintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx2intrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512fintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512erintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512pfintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512cdintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vlintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512bwintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512dqintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vlbwintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vldqintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512ifmaintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512ifmavlintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vbmiintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vbmivlintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/shaintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/lzcntintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/bmiintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/bmi2intrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/fmaintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/f16cintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/rtmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xtestintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mm3dnow.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/prfchwintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/fma4intrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xopintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/lwpintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/tbmintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/rdseedintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/fxsrintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsaveintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsaveoptintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/adxintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/clwbintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/pcommitintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/clflushoptintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsavesintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsavecintrin.h \
+ z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mwaitxintrin.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_events.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_video.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_pixels.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_rect.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_surface.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_blendmode.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_keyboard.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_keycode.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_scancode.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_mouse.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_joystick.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_gamecontroller.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_quit.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_gesture.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_touch.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_filesystem.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_haptic.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_hints.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_loadso.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_log.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_messagebox.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_power.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_render.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_system.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_timer.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_version.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_version.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/begin_code.h \
+ z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/close_code.h
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdio.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/crtdefs.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_mac.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_secapi.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/vadefs.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/sdks/_mingw_directx.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/sdks/_mingw_ddk.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_print_push.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_off_t.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/swprintf.inl:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/sec_api/stdio_s.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_print_pop.h:
+
+SDL_image.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_main.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_stdinc.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_config.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_platform.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/begin_code.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/close_code.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/sys/types.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdlib.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include-fixed/limits.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include-fixed/syslimits.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/limits.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/sec_api/stdlib_s.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/malloc.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/stddef.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/stddef.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/stdarg.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdarg.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/_mingw_stdarg.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/string.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/sec_api/string_s.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/strings.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/inttypes.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/stdint.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/stdint.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_assert.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_atomic.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_audio.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_error.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_endian.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_mutex.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_thread.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/process.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_rwops.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_clipboard.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_cpuinfo.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/intrin.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/setjmp.h:
+
+z:/Lander/MinGW-w64/i686-w64-mingw32/include/psdk_inc/intrin-impl.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/x86intrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/ia32intrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xmmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mm_malloc.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/emmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/pmmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/tmmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/ammintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/smmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/popcntintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/wmmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/immintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avxintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx2intrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512fintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512erintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512pfintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512cdintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vlintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512bwintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512dqintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vlbwintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vldqintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512ifmaintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512ifmavlintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vbmiintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/avx512vbmivlintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/shaintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/lzcntintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/bmiintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/bmi2intrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/fmaintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/f16cintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/rtmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xtestintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mm3dnow.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/prfchwintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/fma4intrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xopintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/lwpintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/tbmintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/rdseedintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/fxsrintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsaveintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsaveoptintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/adxintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/clwbintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/pcommitintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/clflushoptintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsavesintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/xsavecintrin.h:
+
+z:/Lander/MinGW-w64/lib/gcc/i686-w64-mingw32/5.3.0/include/mwaitxintrin.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_events.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_video.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_pixels.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_rect.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_surface.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_blendmode.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_keyboard.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_keycode.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_scancode.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_mouse.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_joystick.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_gamecontroller.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_quit.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_gesture.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_touch.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_filesystem.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_haptic.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_hints.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_loadso.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_log.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_messagebox.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_power.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_render.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_system.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_timer.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_version.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/SDL_version.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/begin_code.h:
+
+z:/lander/libs/SDL2-2.0.4-prebuilt/i686-w64-mingw32/include/SDL2/close_code.h:

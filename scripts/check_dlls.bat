@@ -1,0 +1,2 @@
+PATH=""
+..\bin\app.exe
