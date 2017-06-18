@@ -25,10 +25,6 @@
 #include "window.h"
 #include "utils.h"
 
-#ifdef main
-#undef main
-#endif
-
 void PreInit(); // You can't use most engine features here. You may only read args and exit (with or without error) from here.
 
 namespace Sys

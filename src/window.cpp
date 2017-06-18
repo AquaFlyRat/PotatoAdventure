@@ -205,7 +205,7 @@ namespace Window
         {
             size = Window::DisplaySize(Init::display);
             if (!Init::maximize)
-            fix_window_when_fullscreen_is_disabled_once = 1;
+                fix_window_when_fullscreen_is_disabled_once = 1;
         }
         else
             size = Init::size;
@@ -298,13 +298,15 @@ namespace Window
         glfl::set_function_loader(SDL_GL_GetProcAddress);
         glfl::load_gl(Init::OpenGL::major, Init::OpenGL::minor);
         #endif
-		int x = glGetError();
+
         #if OnMobile && !defined(ASSUME_ANDROID)
         GLboolean status = 0;
         glGetBooleanv(GL_SHADER_COMPILER, &status);
         if (!status)
             Sys::Error("This device does not support shader compilation.");
         #endif
+
+        while (glGetError()) {}
 
         swap_mode = Init::OpenGL::swap;
         switch (swap_mode)
@@ -334,8 +336,8 @@ namespace Window
         SDL_Event resize_event;
         resize_event.type = SDL_WINDOWEVENT;
         resize_event.window.event = SDL_WINDOWEVENT_SIZE_CHANGED;
-		resize_event.window.data1 = size.x;
-		resize_event.window.data2 = size.y;
+        resize_event.window.data1 = size.x;
+        resize_event.window.data2 = size.y;
         SDL_PushEvent(&resize_event);
 
         Tick();
