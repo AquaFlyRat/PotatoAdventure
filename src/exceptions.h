@@ -74,48 +74,49 @@ namespace Exceptions
     };
 
     using impl_Base = Base;
-#define INTERNAL_EXCEPTION_FOR_EACH_a1  std::string p0
-#define INTERNAL_EXCEPTION_FOR_EACH_a2  std::string p0 , std::string p1
-#define INTERNAL_EXCEPTION_FOR_EACH_a3  std::string p0 , std::string p1 , std::string p2
-#define INTERNAL_EXCEPTION_FOR_EACH_a4  std::string p0 , std::string p1 , std::string p2 , std::string p3
-#define INTERNAL_EXCEPTION_FOR_EACH_a5  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4
-#define INTERNAL_EXCEPTION_FOR_EACH_a6  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4 , std::string p5
-#define INTERNAL_EXCEPTION_FOR_EACH_a7  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4 , std::string p5 , std::string p6
-#define INTERNAL_EXCEPTION_FOR_EACH_a8  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4 , std::string p5 , std::string p6 , std::string p7
-#define INTERNAL_EXCEPTION_FOR_EACH_b1  p0
-#define INTERNAL_EXCEPTION_FOR_EACH_b2  p0 , p1
-#define INTERNAL_EXCEPTION_FOR_EACH_b3  p0 , p1 , p2
-#define INTERNAL_EXCEPTION_FOR_EACH_b4  p0 , p1 , p2 , p3
-#define INTERNAL_EXCEPTION_FOR_EACH_b5  p0 , p1 , p2 , p3 , p4
-#define INTERNAL_EXCEPTION_FOR_EACH_b6  p0 , p1 , p2 , p3 , p4 , p5
-#define INTERNAL_EXCEPTION_FOR_EACH_b7  p0 , p1 , p2 , p3 , p4 , p5 , p6
-#define INTERNAL_EXCEPTION_FOR_EACH_b8  p0 , p1 , p2 , p3 , p4 , p5 , p6 , p7
 
-#define NEW_EXCEPTION(name, desc, field_c, ...) \
-    struct name##_t final : Base \
-    { \
-        std::string __VA_ARGS__; \
-        \
-        name##_t() {} \
-        \
-        void update_description() override \
+    #define INTERNAL_EXCEPTION_FOR_EACH_a1  std::string p0
+    #define INTERNAL_EXCEPTION_FOR_EACH_a2  std::string p0 , std::string p1
+    #define INTERNAL_EXCEPTION_FOR_EACH_a3  std::string p0 , std::string p1 , std::string p2
+    #define INTERNAL_EXCEPTION_FOR_EACH_a4  std::string p0 , std::string p1 , std::string p2 , std::string p3
+    #define INTERNAL_EXCEPTION_FOR_EACH_a5  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4
+    #define INTERNAL_EXCEPTION_FOR_EACH_a6  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4 , std::string p5
+    #define INTERNAL_EXCEPTION_FOR_EACH_a7  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4 , std::string p5 , std::string p6
+    #define INTERNAL_EXCEPTION_FOR_EACH_a8  std::string p0 , std::string p1 , std::string p2 , std::string p3 , std::string p4 , std::string p5 , std::string p6 , std::string p7
+    #define INTERNAL_EXCEPTION_FOR_EACH_b1  p0
+    #define INTERNAL_EXCEPTION_FOR_EACH_b2  p0 , p1
+    #define INTERNAL_EXCEPTION_FOR_EACH_b3  p0 , p1 , p2
+    #define INTERNAL_EXCEPTION_FOR_EACH_b4  p0 , p1 , p2 , p3
+    #define INTERNAL_EXCEPTION_FOR_EACH_b5  p0 , p1 , p2 , p3 , p4
+    #define INTERNAL_EXCEPTION_FOR_EACH_b6  p0 , p1 , p2 , p3 , p4 , p5
+    #define INTERNAL_EXCEPTION_FOR_EACH_b7  p0 , p1 , p2 , p3 , p4 , p5 , p6
+    #define INTERNAL_EXCEPTION_FOR_EACH_b8  p0 , p1 , p2 , p3 , p4 , p5 , p6 , p7
+
+    #define NEW_EXCEPTION(name, desc, field_c, ...) \
+        struct name##_t final : Base \
         { \
-            char field_names[] = #__VA_ARGS__; \
-            generate_description(desc, field_names, __VA_ARGS__); \
-        } \
-        std::array<std::reference_wrapper<std::string>, field_c> impl_get_field_refs__() {return {__VA_ARGS__};} \
-    }; \
-    \
-    [[noreturn]] inline void name(INTERNAL_EXCEPTION_FOR_EACH_a##field_c) \
-    { \
-        name##_t ret; \
-        auto fields = ret.impl_get_field_refs__(); \
-        std::reference_wrapper<std::string> params[] {INTERNAL_EXCEPTION_FOR_EACH_b##field_c}; \
-        for (int i = 0; i < field_c; i++) fields[i] = params[i].get(); \
-        ret.update_description(); \
-        throw ret; \
-    }
-#define EXCEPTION_CATEGORY(name) namespace name {struct Base : impl_Base {void update_description() override = 0;}; using impl_Base = Base;} namespace name
+            std::string __VA_ARGS__; \
+            \
+            name##_t() {} \
+            \
+            void update_description() override \
+            { \
+                char field_names[] = #__VA_ARGS__; \
+                generate_description(desc, field_names, __VA_ARGS__); \
+            } \
+            std::array<std::reference_wrapper<std::string>, field_c> impl_get_field_refs__() {return {__VA_ARGS__};} \
+        }; \
+        \
+        [[noreturn]] inline void name(INTERNAL_EXCEPTION_FOR_EACH_a##field_c) \
+        { \
+            name##_t ret; \
+            auto fields = ret.impl_get_field_refs__(); \
+            std::reference_wrapper<std::string> params[] {INTERNAL_EXCEPTION_FOR_EACH_b##field_c}; \
+            for (int i = 0; i < field_c; i++) fields[i] = params[i].get(); \
+            ret.update_description(); \
+            throw ret; \
+        }
+    #define EXCEPTION_CATEGORY(name) namespace name {struct Base : impl_Base {void update_description() override = 0;}; using impl_Base = Base;} namespace name
 }
 
 // Exception definitions
