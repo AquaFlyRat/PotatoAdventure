@@ -5,6 +5,8 @@ os:
 
 compiler:
   - gcc
+install:
+  - sudo apt-get install wine
 script:
-  - sudo scripts/cbp2make.linux-x86 -in ../prj.cbp -out Makefile
+  - sudo wine scripts/cbp2make.exe -in ../prj.cbp -out Makefile
   - make
