@@ -8,11 +8,21 @@ namespace Backend
 
 
 void Boot();
+void Main();
+
+
+
+static int window_scale = 3;
+static constexpr ivec2 ref_window_sz(480,270);
+
+
 
 void PreInit()
 {
+    Sys::Config::ApplicationName("Potato Adventure");
+    Window::Init::Name("Potato Adventure");
+    Window::Init::Size(ref_window_sz * window_scale);
     Sys::SetCurrentFunction(Boot);
-    Window::Init::Resizable(1);
 }
 
 void Resize()
@@ -20,24 +30,29 @@ void Resize()
     Graphics::ViewportFullscreen();
 }
 
-//Utils::TickStabilizer *ts;
+Utils::TickStabilizer *ts;
 
 void Boot()
 {
     MarkLocation("Boot");
 
-    //ts = new Utils::TickStabilizer();
+    ts = new Utils::TickStabilizer(60, 8);
 
+    Sys::SetCurrentFunction(Main);
+}
+
+void Main()
+{
     while (1)
     {
         Sys::BeginFrame();
-        Sys::Tick();
-        constexpr int period = 200;
-        float f = std::cos(Sys::FrameCounter() % period / float(period) * pi<float>() * 2) * 0.5 + 0.5;
-        glClearColor(f, f/2, 1 - f, 1);
+        while (ts->Tick())
+        {
+            Sys::Tick();
+
+        }
+
 
         Sys::EndFrame();
     }
-
-    Sys::Exit();
 }
