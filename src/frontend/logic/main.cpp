@@ -1,4 +1,11 @@
-#include "master.h"
+#include "../master.h"
+
+
+namespace Backend
+{
+    void Tick();
+}
+
 
 void Boot();
 
@@ -13,9 +20,13 @@ void Resize()
     Graphics::ViewportFullscreen();
 }
 
+//Utils::TickStabilizer *ts;
+
 void Boot()
 {
     MarkLocation("Boot");
+
+    //ts = new Utils::TickStabilizer();
 
     while (1)
     {
