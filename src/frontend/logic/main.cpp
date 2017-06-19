@@ -4,7 +4,7 @@
 namespace Backend
 {
     void Tick();
-	void Start();
+    void Start();
 }
 
 
@@ -27,7 +27,7 @@ void Boot()
 {
     MarkLocation("Boot");
     //ts = new Utils::TickStabilizer();
-	Backend::Start();
+    Backend::Start();
     while (1)
     {
         Sys::BeginFrame();

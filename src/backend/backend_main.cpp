@@ -4,11 +4,11 @@
 namespace Backend
 {
     void Tick()
-	{
+    {
     }
 
-	void Start()
-	{
-		std::cout << "This is loading from backend" << std::endl;
-	}
+    void Start()
+    {
+        std::cout << "This is loading from backend" << std::endl;
+    }
 }

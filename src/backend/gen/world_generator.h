@@ -3,11 +3,11 @@
 
 namespace Backend
 {
-	class WorldGenerator
-	{
-	public:
-
-	};
+    class WorldGenerator
+    {
+    public:
+        
+    };
 }
 
 #endif
