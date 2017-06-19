@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="0engine" />
+		<Option title="Potato Adventure" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -137,6 +137,8 @@
 		<Unit filename="src/network.h" />
 		<Unit filename="src/os.h" />
 		<Unit filename="src/renderer2d.h" />
+		<Unit filename="src/strings.cpp" />
+		<Unit filename="src/strings.h" />
 		<Unit filename="src/system.cpp" />
 		<Unit filename="src/system.h" />
 		<Unit filename="src/utils.cpp" />

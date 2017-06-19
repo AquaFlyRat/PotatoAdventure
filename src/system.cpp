@@ -1,4 +1,5 @@
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
@@ -452,6 +453,11 @@ extern "C"
         __declspec(dllexport) uint32_t NvOptimusEnablement                  = 1; // For Nvidia. Docs suggest that this should have type dword, but I don't want windows headers here.
         __declspec(dllexport) int      AmdPowerXpressRequestHighPerformance = 1; // For Amd.
     )
+
+    #if defined(_MSC_VER) && _MSC_VER >= 1900
+    FILE _iob[] {*stdin, *stdout, *stderr};
+    FILE * __cdecl __iob_func(void) {return _iob;}
+    #endif
 }
 
 int main(int argc, char **argv)
