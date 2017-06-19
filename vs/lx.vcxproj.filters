@@ -7,135 +7,144 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{a35f87cc-a8cf-425c-b1d6-1a3d7950905e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\frontend">
-      <UniqueIdentifier>{0d3ce588-7ee5-40c9-9f55-e8d1e286d2fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\backend">
-      <UniqueIdentifier>{e14b8d6d-5c20-4a8b-a8ad-3f631380bb80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\frontend\lib">
-      <UniqueIdentifier>{d81c79a9-6905-4658-9b01-d1c1ab61a4c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\frontend">
+    <Filter Include="Header Files\Frontend">
       <UniqueIdentifier>{c8c81324-2040-4cef-a2a1-c48fa766a7d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\backend">
+    <Filter Include="Header Files\Backend">
       <UniqueIdentifier>{02510626-1473-4f99-a1fa-98609f8f322b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\frontend\lib">
+    <Filter Include="Header Files\Frontend\Lib">
       <UniqueIdentifier>{66a6ece0-09e5-4618-b0bc-64f78f1644ad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\frontend\logic">
+    <Filter Include="Source Files\Backend">
+      <UniqueIdentifier>{e14b8d6d-5c20-4a8b-a8ad-3f631380bb80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Frontend">
+      <UniqueIdentifier>{0d3ce588-7ee5-40c9-9f55-e8d1e286d2fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Frontend\Lib">
+      <UniqueIdentifier>{d81c79a9-6905-4658-9b01-d1c1ab61a4c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Frontend\Logic">
       <UniqueIdentifier>{d5ffd6e0-3db1-482c-b2e0-18c0138d634f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Backend\Gen">
+      <UniqueIdentifier>{2bbb89b9-c1d4-4896-a74b-3439a9176cad}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\getopt.c">
-      <Filter>Source Files\frontend\lib</Filter>
+      <Filter>Source Files\Frontend\Lib</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\glfl.cpp">
-      <Filter>Source Files\frontend\lib</Filter>
+      <Filter>Source Files\Frontend\Lib</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\audio.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\graphics.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\input.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\network.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\strings.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\system.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\utils.cpp">
-      <Filter>Source Files\frontend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\window.cpp">
-      <Filter>Source Files\frontend</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\backend\main.cpp">
-      <Filter>Source Files\backend</Filter>
+      <Filter>Source Files\Frontend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\frontend\logic\main.cpp">
-      <Filter>Source Files\frontend\logic</Filter>
+      <Filter>Source Files\Frontend\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\backend\backend_main.cpp">
+      <Filter>Source Files\Backend</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\frontend\lib\al.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\gl.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\ogg.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\sdl.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\sdlimg.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\sdlnet.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\sdlttf.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\vorbis.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\lib\z.h">
-      <Filter>Header Files\frontend\lib</Filter>
+      <Filter>Header Files\Frontend\Lib</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\audio.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\exceptions.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\graphics.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\input.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\input_enums.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\master.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\math.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\network.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\os.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\renderer2d.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\strings.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\system.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\window.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\frontend\utils.h">
-      <Filter>Header Files\frontend</Filter>
+      <Filter>Header Files\Frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\world_generator.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\world.h">
+      <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

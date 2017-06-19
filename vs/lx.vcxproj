@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\lib\getopt.c" />
     <ClCompile Include="..\lib\glfl.cpp" />
-    <ClCompile Include="..\src\backend\main.cpp" />
+    <ClCompile Include="..\src\backend\backend_main.cpp" />
     <ClCompile Include="..\src\frontend\audio.cpp" />
     <ClCompile Include="..\src\frontend\graphics.cpp" />
     <ClCompile Include="..\src\frontend\input.cpp" />
@@ -33,6 +33,8 @@
     <ClCompile Include="..\src\frontend\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\backend\gen\world.h" />
+    <ClInclude Include="..\src\backend\gen\world_generator.h" />
     <ClInclude Include="..\src\frontend\audio.h" />
     <ClInclude Include="..\src\frontend\exceptions.h" />
     <ClInclude Include="..\src\frontend\graphics.h" />
