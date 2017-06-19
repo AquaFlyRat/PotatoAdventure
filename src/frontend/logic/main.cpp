@@ -3,13 +3,13 @@
 
 namespace Backend
 {
+    void Start();
     void Tick();
 }
 
 
 void Boot();
 void Main();
-
 
 
 static int window_scale = 3;
@@ -43,6 +43,9 @@ void Boot()
 
 void Main()
 {
+    Backend::Start();
+
+    //ts = new Utils::TickStabilizer();
     while (1)
     {
         Sys::BeginFrame();
