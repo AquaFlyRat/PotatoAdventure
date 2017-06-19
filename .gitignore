@@ -10,4 +10,5 @@ vs/obj/
 vs/.vs
 vs/*.vcxproj.user
 bin/
+*.dll
 
