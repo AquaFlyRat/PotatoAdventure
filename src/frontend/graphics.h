@@ -504,9 +504,8 @@ namespace Graphics
                 Sys::Error("Invalid rendering array size.");
             size = l;
             pos = 0;
-            arr.alloc(l);
-            vao.~VertexArray();
-            new(&vao) VertexArray<L>(0, sizeof (L) * l, acc);
+            arr.resize(l);
+            vao.NewData({(const uint8_t *)0, sizeof (L) * l}, acc);
         }
 
         L *Add(uint32_t amount)
@@ -579,10 +578,22 @@ namespace Graphics
 
         RenderQueue(uint32_t l, StorageType acc = StorageType::draw_dynamic) : RenderArray<L>(l * Dim, acc) {}
 
-        using RenderArray<L>::MaxSize;
-        using RenderArray<L>::CurrentSize;
-        using RenderArray<L>::ChangeSize;
         using RenderArray<L>::Empty;
+
+        uint32_t MaxSize()
+        {
+            return RenderArray<L>::MaxSize() / Dim;
+        }
+        uint32_t CurrentSize()
+        {
+            return RenderArray<L>::CurrentSize() / Dim;
+        }
+        void ChangeSize(uint32_t l, StorageType acc = StorageType::draw_dynamic)
+        {
+            if (!Empty())
+                Flush();
+            RenderArray<L>::ChangeSize(l * Dim, acc);
+        }
 
         void Discard()
         {
