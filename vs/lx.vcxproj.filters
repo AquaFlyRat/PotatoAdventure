@@ -31,6 +31,9 @@
     <Filter Include="Header Files\Backend\Gen">
       <UniqueIdentifier>{2bbb89b9-c1d4-4896-a74b-3439a9176cad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Backend\Gen">
+      <UniqueIdentifier>{6df2c1cd-be60-4fb6-b867-fa58af9823a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\getopt.c">
@@ -71,6 +74,15 @@
     </ClCompile>
     <ClCompile Include="..\src\frontend\renderer2d.cpp">
       <Filter>Source Files\Frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\backend\gen\city.cpp">
+      <Filter>Source Files\Backend\Gen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\backend\gen\city_generator.cpp">
+      <Filter>Source Files\Backend\Gen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\backend\gen\gen_config.cpp">
+      <Filter>Source Files\Backend\Gen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +159,18 @@
       <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
     <ClInclude Include="..\src\backend\gen\world.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\city.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\city_generator.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\backend_utils.h">
+      <Filter>Header Files\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\gen_config.h">
       <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
   </ItemGroup>

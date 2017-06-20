@@ -1,5 +1,8 @@
 #include "../frontend/master.h"
 #include "gen/world_generator.h"
+#include "gen/city_generator.h"
+#include "backend_utils.h"
+#include <stdlib.h>
 
 namespace Backend
 {
@@ -9,5 +12,7 @@ namespace Backend
 
     void Start()
     {
+        CityGenerator citys;
+        citys.GenerateAll();
     }
 }
