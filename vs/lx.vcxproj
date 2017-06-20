@@ -27,6 +27,7 @@
     <ClCompile Include="..\src\frontend\input.cpp" />
     <ClCompile Include="..\src\frontend\logic\main.cpp" />
     <ClCompile Include="..\src\frontend\network.cpp" />
+    <ClCompile Include="..\src\frontend\renderer2d.cpp" />
     <ClCompile Include="..\src\frontend\strings.cpp" />
     <ClCompile Include="..\src\frontend\system.cpp" />
     <ClCompile Include="..\src\frontend\utils.cpp" />
@@ -136,6 +137,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)../lib/_win32</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;OpenAL32.lib;SDL2_net.lib;zlib.lib;libvorbis_static.lib;libogg_static.lib;libvorbisfile_static.lib;freetype.lib;libpng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy  $(ProjectDir)../assets $(ProjectDir)assets /e /i /h</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -153,6 +157,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)../lib/_win32</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;OpenAL32.lib;SDL2_net.lib;zlib.lib;libvorbis_static.lib;libogg_static.lib;libvorbisfile_static.lib;freetype.lib;libpng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy  $(ProjectDir)../assets $(ProjectDir)assets /e /i /h</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

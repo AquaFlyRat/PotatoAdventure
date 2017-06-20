@@ -69,6 +69,9 @@
     <ClCompile Include="..\src\backend\backend_main.cpp">
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\frontend\renderer2d.cpp">
+      <Filter>Source Files\Frontend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\frontend\lib\al.h">
