@@ -7,6 +7,108 @@
 class Renderer2D
 {
   public:
+    using VertexFormat = Graphics::VertexFormat<fvec2,  // pos
+                                                fvec4,  // color
+                                                fvec2,  // texture coords
+                                                fvec3>; // x - texture color factor (0 - fill color, 1 - texture color)
+                                                        // y - texture alpha factor (0 - fill alpha, 1 - texture alpha)
+                                                        // z - post alpha factor (1 - normal drawing, 0 - additive blending)
+
+
+  private:
+    ivec2 size;
+    bool use_mouse_mapping;
+    Utils::Object<Graphics::RenderQueue<VertexFormat, 3>> render_queue;
+    Utils::Object<Graphics::Shader> main_shader;
+    int current_tex;
+    ivec2 current_tex_size;
+
+  public:
+    static constexpr int default_render_queue_size = 0x10000;
+    static const Graphics::ShaderSource &DefaultShaderSource();
+
+    Renderer2D(ivec2 render_size, int render_queue_size = default_render_queue_size, const Graphics::ShaderSource &shader_src = DefaultShaderSource())
+    {
+        size = render_size;
+        use_mouse_mapping = 0;
+        current_tex = -1;
+        render_queue.create(render_queue_size);
+        main_shader.create("Renderer2D shader", shader_src);
+        main_shader->SetUniform<fmat4>(0, fmat4::ortho({0,float(size.y)}, {float(size.x), 0}, -1, 1));
+        ResetColorMatrix();
+    }
+
+    void UseMouseMapping(bool n)
+    {
+        use_mouse_mapping = n;
+    }
+
+    void UpdateViewport(float scale = 1)
+    {
+        ivec2 sz = (size * scale).apply((long(*)(double))lround);
+        ivec2 pos = Window::Size() / 2 - sz / 2;
+        Graphics::Viewport(pos, sz);
+        if (use_mouse_mapping)
+            Input::SetMouseMapping(pos, 1 / scale);
+    }
+
+    void SetTexture(const Graphics::Texture &tex)
+    {
+        if (current_tex != tex.Slot())
+        {
+            current_tex = tex.Slot();
+            Flush();
+            main_shader->SetUniform<Graphics::Texture>(1, tex);
+        }
+        if (current_tex_size != tex.Size())
+        {
+            current_tex_size = tex.Size();
+            Flush();
+            main_shader->SetUniform<fvec2>(2, tex.Size());
+        }
+    }
+
+    void EnableShader()
+    {
+        main_shader->Use();
+    }
+
+    void SetBlendingMode()
+    {
+        Graphics::Blend::Presets::FuncNormal_Pre();
+    }
+
+    void Flush()
+    {
+        if (!render_queue->Empty())
+            render_queue->Flush();
+    }
+
+    void SetColorMatrix(fmat4 m)
+    {
+        Flush();
+        main_shader->SetUniform<fmat4>(3, m);
+    }
+    void ResetColorMatrix()
+    {
+        SetColorMatrix(fmat4::identity());
+    }
+
+    void Rect(fvec2 pos, fvec2 sz, fvec2 tpos, fvec2 tsz, fvec4 color = {0,0,0,0}, float tex_color_fac = 1, float tex_alpha_fac = 1, float post_alpha_fac = 1)
+    {
+        sz += pos;
+        tsz += tpos;
+        render_queue->Insert({pos,          color, tpos,           {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
+                             {{sz.x,pos.y}, color, {tsz.x,tpos.y}, {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
+                             {sz,           color, tsz,            {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
+                             {{pos.x,sz.y}, color, {tpos.x,tsz.y}, {tex_color_fac, tex_alpha_fac, post_alpha_fac}});
+    }
+};
+
+/*
+class Renderer2D
+{
+  public:
     //                                          pos    color  texpos factors (color: fixed..texture, alpha: fixed..texture, luminosity)
     using VertexFormat = Graphics::VertexFormat<fvec2, fvec4, fvec2, fvec3>;
 
@@ -399,6 +501,6 @@ void main()
     {
         Textf(dst, font_index, scale, alignment, str, color, angle, luminance);
     }
-};
+};*/
 
 #endif

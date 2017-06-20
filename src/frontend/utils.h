@@ -114,6 +114,7 @@ namespace Utils
         {
             destroy();
             ::new (&data) T((P &&)p...);
+            alive = 1;
         }
         void destroy()
         {
@@ -663,6 +664,7 @@ namespace Utils
     {
         TextInput() {}
         TextInput(std::string fname) : IO(IO::FromTextFile(fname, IO::Mode::read)) {}
+        TextInput(const char *fname) : IO(IO::FromTextFile(fname, IO::Mode::read)) {}
         TextInput(const void *mem, int size) : IO(IO::FromConstMemory(mem, size)) {}
         TextInput &&Move() {return (TextInput &&)*this;}
     };
@@ -670,6 +672,7 @@ namespace Utils
     {
         BinaryInput() {}
         BinaryInput(std::string fname) : IO(IO::FromBinaryFile(fname, IO::Mode::read)) {}
+        BinaryInput(const char *fname) : IO(IO::FromBinaryFile(fname, IO::Mode::read)) {}
         BinaryInput(const void *mem, int size) : IO(IO::FromConstMemory(mem, size)) {}
         BinaryInput &&Move() {return (BinaryInput &&)*this;}
     };
@@ -677,6 +680,7 @@ namespace Utils
     {
         TextOutput() {}
         TextOutput(std::string fname) : IO(IO::FromTextFile(fname, IO::Mode::write)) {}
+        TextOutput(const char *fname) : IO(IO::FromTextFile(fname, IO::Mode::write)) {}
         TextOutput(void *mem, int size) : IO(IO::FromMemory(mem, size)) {}
         TextOutput &&Move() {return (TextOutput &&)*this;}
     };
@@ -684,6 +688,7 @@ namespace Utils
     {
         BinaryOutput() {}
         BinaryOutput(std::string fname) : IO(IO::FromBinaryFile(fname, IO::Mode::write)) {}
+        BinaryOutput(const char *fname) : IO(IO::FromBinaryFile(fname, IO::Mode::write)) {}
         BinaryOutput(void *mem, int size) : IO(IO::FromMemory(mem, size)) {}
         BinaryOutput &&Move() {return (BinaryOutput &&)*this;}
     };

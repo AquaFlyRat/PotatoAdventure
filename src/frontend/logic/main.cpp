@@ -12,8 +12,8 @@ void Boot();
 void Main();
 
 
-static int window_scale = 3;
-static constexpr ivec2 ref_window_sz(480,270);
+static int window_scale = 2;
+static constexpr ivec2 default_window_size(480,270);
 
 
 
@@ -21,22 +21,36 @@ void PreInit()
 {
     Sys::Config::ApplicationName("Potato Adventure");
     Window::Init::Name("Potato Adventure");
-    Window::Init::Size(ref_window_sz * window_scale);
+    Window::Init::Size(default_window_size * window_scale);
     Sys::SetCurrentFunction(Boot);
+
+    glfl::check_errors = 1;
+    glfl::terminate_on_error = 1;
 }
+
+static Utils::TickStabilizer *ts;
+static Graphics::Texture *main_texture;
+static Renderer2D *renderer;
 
 void Resize()
 {
-    Graphics::ViewportFullscreen();
+    renderer->UpdateViewport(window_scale);
 }
-
-Utils::TickStabilizer *ts;
 
 void Boot()
 {
     MarkLocation("Boot");
 
     ts = new Utils::TickStabilizer(60, 8);
+
+    main_texture = new Graphics::Texture(Graphics::ImageData::FromPNG("assets/texture.png"));
+    main_texture->LinearInterpolation(0);
+
+    renderer = new Renderer2D(default_window_size);
+    renderer->SetTexture(*main_texture);
+    renderer->SetBlendingMode();
+    renderer->UseMouseMapping(1);
+    renderer->EnableShader();
 
     Sys::SetCurrentFunction(Main);
 }
@@ -45,15 +59,27 @@ void Main()
 {
     Backend::Start();
 
-    //ts = new Utils::TickStabilizer();
+    auto Tick = [&]
+    {
+
+    };
+    auto Render = [&]
+    {
+        renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 10.0));
+        renderer->Rect(Input::MousePos() - ivec2(0,16), {32,16}, {0,0}, {32,16});
+    };
+
     while (1)
     {
         Sys::BeginFrame();
         while (ts->Tick())
         {
             Sys::Tick();
-
+            Backend::Tick();
+            Tick();
         }
+        Render();
+        renderer->Flush();
 
 
         Sys::EndFrame();

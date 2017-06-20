@@ -17,6 +17,8 @@ namespace Graphics
 
     static bool depth_test = 0;
 
+    static unsigned int active_tex_slot = 0;
+
     namespace Init
     {
         static int max_texture_count = 48;
@@ -56,7 +58,7 @@ namespace Graphics
     {
         std::string glerr;
         bool isglerr = 0;
-		
+
         while (GLenum err = glGetError())
         {
             isglerr = 1;
@@ -533,6 +535,20 @@ namespace Graphics
             {
                 uniform_locs[loc++] = glGetUniformLocation(prog, it.c_str());
             }
+        }
+    }
+
+
+    unsigned int ActiveTextureSlot()
+    {
+        return active_tex_slot;
+    }
+    void SetActiveTextureSlot(unsigned int n)
+    {
+        if (n != active_tex_slot)
+        {
+            glActiveTexture(GL_TEXTURE0 + n);
+            active_tex_slot = n;
         }
     }
 

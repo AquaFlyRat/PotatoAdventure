@@ -36,7 +36,7 @@ namespace Input
     KeyID AnyKeyDown    (); //
     KeyID AnyKeyPressed (); // Return 0 if there is no such key.
     KeyID AnyKeyReleased(); //
-    inline std::string KeyName(KeyID id) {return SDL_GetScancodeName((SDL_Scancode)id);}
+    std::string KeyName(KeyID id);
 
     // _Immediate functions work instantly, while treir normal alternatives work after a current tick ends.
     void ShowMouse(bool n);

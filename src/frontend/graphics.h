@@ -493,6 +493,10 @@ namespace Graphics
         {
             return pos;
         }
+        bool Empty() const
+        {
+            return !CurrentSize();
+        }
 
         void ChangeSize(uint32_t l, StorageType acc = StorageType::draw_dynamic)
         {
@@ -578,11 +582,11 @@ namespace Graphics
         using RenderArray<L>::MaxSize;
         using RenderArray<L>::CurrentSize;
         using RenderArray<L>::ChangeSize;
-        using RenderArray<L>::Clear;
+        using RenderArray<L>::Empty;
 
-        void Clear()
+        void Discard()
         {
-            RenderArray<L>::pos = 0;
+            RenderArray<L>::Clear();
         }
         void Flush() // Draws and clears the queue.
         {
@@ -593,7 +597,7 @@ namespace Graphics
                 case 2: RenderArray<L>::Draw(lines    ); break;
                 case 3: RenderArray<L>::Draw(triangles); break;
             }
-            RenderArray<L>::pos = 0;
+            RenderArray<L>::Clear();
         }
 
         L *Add(uint32_t primitives)
@@ -1292,17 +1296,8 @@ namespace Graphics
         fill   = ForPC(GL_CLAMP_TO_BORDER) ForMobile(GL_CLAMP_TO_EDGE),
     };
 
-
-    static void SetActiveTextureSlot(unsigned int n) // You need to call this only if you use GL functions manually. Always use this instead of glActiveTexture() if you use any of Texture classes!
-    {
-        static unsigned int active_tex = 0;
-        if (n != active_tex)
-        {
-            glActiveTexture(GL_TEXTURE0 + n);
-            active_tex = n;
-        }
-    }
-
+    unsigned int ActiveTextureSlot();
+    void SetActiveTextureSlot(unsigned int n); // You need to call this only if you use GL functions manually. Always use this instead of glActiveTexture() if you use any of Texture classes!
 
     template <typename Derived> class TextureBase
     {
@@ -1340,10 +1335,10 @@ namespace Graphics
         void MagLinearInterpolation(bool n) {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_MAG_FILTER, n ? GL_LINEAR : GL_NEAREST);}
         void LinearInterpolation(bool n)    {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_MIN_FILTER, n ? GL_LINEAR : GL_NEAREST);
                                                          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, n ? GL_LINEAR : GL_NEAREST);}
-        void WrapModeX(WrapMode mode)  {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_S, (GLuint)mode);}
-        void WrapModeY(WrapMode mode)  {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_T, (GLuint)mode);}
-        void WrapModeXY(WrapMode mode) {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_S, (GLuint)mode);
-                                                    glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_T, (GLuint)mode);}
+        void WrapModeX(WrapMode mode) {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_S, (GLuint)mode);}
+        void WrapModeY(WrapMode mode) {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_T, (GLuint)mode);}
+        void WrapMode(WrapMode mode)  {Activate(); glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_S, (GLuint)mode);
+                                                   glTexParameteri(Derived::GetTargetName(), GL_TEXTURE_WRAP_T, (GLuint)mode);}
         GLuint Handle() const {return handle;}
         int Slot() const {return tex_id;}
         ivec2 Size() const {return size;}

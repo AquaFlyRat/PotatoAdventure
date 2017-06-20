@@ -184,6 +184,11 @@ namespace Input
     KeyID AnyKeyPressed () {return any_key_pr_id;}
     KeyID AnyKeyReleased() {return any_key_re_id;}
 
+    std::string KeyName(KeyID id)
+    {
+        return SDL_GetScancodeName((SDL_Scancode)id);
+    }
+
 
     void ShowMouse(bool n)
     {

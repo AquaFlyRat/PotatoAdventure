@@ -9,6 +9,5 @@ namespace Backend
 
     void Start()
     {
-        std::cout << "This is loading from backend" << std::endl;
     }
 }
