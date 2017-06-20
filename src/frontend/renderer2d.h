@@ -94,15 +94,263 @@ class Renderer2D
         SetColorMatrix(fmat4::identity());
     }
 
-    void Rect(fvec2 pos, fvec2 sz, fvec2 tpos, fvec2 tsz, fvec4 color = {0,0,0,0}, float tex_color_fac = 1, float tex_alpha_fac = 1, float post_alpha_fac = 1)
+  private:
+    class DrawCommand
     {
-        sz += pos;
+        DrawCommand(const DrawCommand &) = default;
+        DrawCommand &operator=(const DrawCommand &) = default;
+
+        Renderer2D *renderer;
+
+        fvec2 dst_pos, dst_size;
+
+        bool have_texture = 0;
+        fvec2 texture_pos = {0,0}, texture_size = {1,1};
+
+        bool have_center = 0;
+        fvec2 sprite_center = {0,0};
+
+        float sprite_angle = 0;
+
+        bool have_color = 0;
+        fvec3 sprite_colors[4] = {};
+
+        bool have_tex_color_fac = 0;
+        float tex_color_factors[4] = {1,1,1,1};
+
+        float sprite_alpha[4] = {1,1,1,1};
+        float sprite_opacity[4] = {1,1,1,1};
+
+        bool absolute_pos = 0;
+        bool absolute_tex_pos = 0;
+
+        using rvalue = DrawCommand &&;
+
+      public:
+        DrawCommand(DrawCommand &&o) : DrawCommand(o)
+        {
+            o.renderer = 0;
+        }
+        DrawCommand &operator=(DrawCommand &&o)
+        {
+            *this = o;
+            o.renderer = 0;
+            return *this;
+        }
+
+        DrawCommand(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
+
+        rvalue tex(fvec2 pos, fvec2 sz) &&
+        {
+            assert(!have_texture);
+            have_texture = 1;
+
+            texture_pos = pos;
+            texture_size = sz;
+            return (rvalue)*this;
+        }
+        rvalue tex(fvec2 pos) &&
+        {
+            assert(!have_texture);
+            have_texture = 1;
+
+            texture_pos = pos;
+            texture_size = dst_size;
+            return (rvalue)*this;
+        }
+        rvalue center(fvec2 c) &&
+        {
+            assert(!have_center);
+            have_center = 1;
+
+            sprite_center = c;
+            return (rvalue)*this;
+        }
+        rvalue angle(float a) &&
+        {
+            sprite_angle = a;
+            return (rvalue)*this;
+        }
+        rvalue color(fvec3 c) &&
+        {
+            assert(!have_color);
+            have_color = 1;
+
+            for (auto &it : sprite_colors)
+                it = c;
+            return (rvalue)*this;
+        }
+        rvalue color(fvec3 a, fvec3 b, fvec3 c, fvec3 d) &&
+        {
+            assert(!have_color);
+            have_color = 1;
+
+            sprite_colors[0] = a;
+            sprite_colors[1] = b;
+            sprite_colors[2] = c;
+            sprite_colors[3] = d;
+            return (rvalue)*this;
+        }
+        rvalue mix(float x) && // 0 - fill with color (default if color is provided), 1 - use texture
+        {
+            assert(!have_tex_color_fac);
+            have_tex_color_fac = 1;
+
+            for (auto &it : tex_color_factors)
+                it = x;
+            return (rvalue)*this;
+        }
+        rvalue mix(float a, float b, float c, float d) &&
+        {
+            assert(!have_tex_color_fac);
+            have_tex_color_fac = 1;
+
+            tex_color_factors[0] = a;
+            tex_color_factors[1] = b;
+            tex_color_factors[2] = c;
+            tex_color_factors[3] = d;
+            return (rvalue)*this;
+        }
+        rvalue alpha(float a) &&
+        {
+            for (auto &it : sprite_alpha)
+                it = a;
+            return (rvalue)*this;
+        }
+        rvalue alpha(float a, float b, float c, float d) &&
+        {
+            sprite_alpha[0] = a;
+            sprite_alpha[1] = b;
+            sprite_alpha[2] = c;
+            sprite_alpha[3] = d;
+            return (rvalue)*this;
+        }
+        rvalue opacity(float o) && // 1 - normal blending, 0 - additive blending
+        {
+            for (auto &it : sprite_opacity)
+                it = o;
+            return (rvalue)*this;
+        }
+        rvalue opacity(float a, float b, float c, float d) && // 1 - normal blending, 0 - additive blending
+        {
+            sprite_opacity[0] = a;
+            sprite_opacity[1] = b;
+            sprite_opacity[2] = c;
+            sprite_opacity[3] = d;
+            return (rvalue)*this;
+        }
+        rvalue absolute(bool x = 1) && // Interpret size as a position of the second corner
+        {
+            absolute_pos = x;
+            return (rvalue)*this;
+        }
+        rvalue absolute_tex(bool x = 1) && // Interpret texture size as a position of the second corner
+        {
+            absolute_tex_pos = x;
+            return (rvalue)*this;
+        }
+
+        ~DrawCommand()
+        {
+            if (!renderer)
+                return;
+
+            assert(have_texture || have_color);
+            assert(absolute_pos + have_center < 2);
+
+            if (absolute_pos)
+            {
+                dst_size -= dst_pos;
+            }
+            if (absolute_tex_pos)
+            {
+                assert(have_texture);
+                texture_size -= texture_pos;
+            }
+
+            fvec4 final_colors[4];
+            fvec3 factors[4];
+
+            if (!have_texture)
+            {
+                if (!have_tex_color_fac)
+                {
+                    for (auto &it : factors)
+                        it.x = 0;
+                }
+                else
+                {
+                    for (int i = 0; i < 4; i++)
+                        factors[i].x = tex_color_factors[i];
+                }
+
+                for (int i = 0; i < 4; i++)
+                {
+                    final_colors[i] = sprite_colors[i].to_vec4(sprite_alpha[4]);
+                    factors[i].y = 0;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    factors[i].x = tex_color_factors[i];
+                    final_colors[i] = sprite_colors[i].to_vec4(0);
+                    factors[i].y = sprite_alpha[i];
+                }
+
+                sprite_center = sprite_center * dst_size / texture_size;
+            }
+            for (int i = 0; i < 4; i++)
+                factors[i].z = sprite_opacity[i];
+
+            fvec2 a = -sprite_center;
+            fvec2 c = dst_size - sprite_center;
+
+            fvec2 b = {a.x, c.y};
+            fvec2 d = {c.x, a.y};
+
+            if (sprite_angle != 0)
+            {
+                fmat2 m = fmat2::rotate2D(sprite_angle);
+                a = m /mul/ a;
+                b = m /mul/ b;
+                c = m /mul/ c;
+                d = m /mul/ d;
+            }
+
+            fvec2 tex_a = texture_pos;
+            fvec2 tex_c = texture_pos + texture_size;
+
+            fvec2 tex_b = {tex_a.x, tex_c.y};
+            fvec2 tex_d = {tex_c.x, tex_a.y};
+
+            std::cout << dst_pos+d << '\n';
+
+            renderer->render_queue->Insert({dst_pos + a, final_colors[0], tex_a, factors[0]},
+                                           {dst_pos + b, final_colors[1], tex_b, factors[1]},
+                                           {dst_pos + c, final_colors[2], tex_c, factors[2]},
+                                           {dst_pos + d, final_colors[3], tex_d, factors[3]});
+        }
+    };
+
+  public:
+    DrawCommand Sprite(fvec2 pos, fvec2 size)
+    {
+        return {this, pos, size};
+    }
+
+    /*
+    void LowerRect(fvec2 pos, fvec2 sz, fvec2 tpos, fvec2 tsz, fvec2 center = {0,0}, float angle = 0, fvec4 color = {0,0,0,0}, float tex_color_fac = 1, float tex_alpha_fac = 1, float post_alpha_fac = 1)
+    {
+        center = center * sz / tsz;
+
         tsz += tpos;
         render_queue->Insert({pos,          color, tpos,           {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
                              {{sz.x,pos.y}, color, {tsz.x,tpos.y}, {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
                              {sz,           color, tsz,            {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
                              {{pos.x,sz.y}, color, {tpos.x,tsz.y}, {tex_color_fac, tex_alpha_fac, post_alpha_fac}});
-    }
+    }*/
 };
 
 /*

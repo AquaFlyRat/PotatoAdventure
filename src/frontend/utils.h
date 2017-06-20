@@ -750,25 +750,25 @@ namespace Utils
             {
                 // This function may be redundant on some systems, but this is not guaranteed.
                 first = &*arr.begin();
-                length = &*arr.end() - &*arr.begin();
+                length = arr.size();
             }
             template <std::size_t S> ArrayProxy(const std::array<type, S> &arr) // From const std::array. Use this with caution on temporary arrays.
             {
                 // This function may be redundant on some systems, but this is not guaranteed.
                 static_assert(readonly, "Attempt to bind read-write proxy to a const object.");
                 first = &*arr.begin();
-                length = &*arr.end() - &*arr.begin();
+                length = arr.size();
             }
             ArrayProxy(std::vector<type> &arr) // From std::vector.
             {
                 first = &*arr.begin();
-                length = &*arr.end() - &*arr.begin();
+                length = arr.size();
             }
             ArrayProxy(const std::vector<type> &arr) // From const std::vector. Use this with caution on temporary vectors.
             {
                 static_assert(readonly, "Attempt to bind read-write proxy to a const object.");
                 first = &*arr.begin();
-                length = &*arr.end() - &*arr.begin();
+                length = arr.size();
             }
         };
 

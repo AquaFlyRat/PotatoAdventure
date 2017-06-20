@@ -46,7 +46,6 @@ namespace Graphics
     }
     void BeginFrame()
     {
-        Clear();
     }
     void EndFrame()
     {

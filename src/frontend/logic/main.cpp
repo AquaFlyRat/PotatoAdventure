@@ -58,15 +58,17 @@ void Boot()
 void Main()
 {
     Backend::Start();
-
+Graphics::SetClearColor01({0.5,0.5,0.5,1});
     auto Tick = [&]
     {
 
     };
     auto Render = [&]
     {
+        Graphics::Clear();
         renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 10.0));
-        renderer->Rect(Input::MousePos() - ivec2(0,16), {32,16}, {0,0}, {32,16});
+        renderer->Sprite({150,100}, {32,16}).tex({0,0});
+        //renderer->Sprite(Input::MousePos(), {32,16}).tex({0,0});
     };
 
     while (1)
