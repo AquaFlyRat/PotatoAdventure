@@ -9,6 +9,7 @@ vs/bin/
 vs/obj/
 vs/.vs
 vs/*.vcxproj.user
+vs/assets/
 bin/
 *.dll
 
