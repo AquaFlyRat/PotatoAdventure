@@ -548,7 +548,7 @@ namespace Graphics
 
         operator const L *() const
         {
-            return arr;
+            return arr.data();
         }
 
         void Send() // You shall not call Push*() between Send() and Draw*()

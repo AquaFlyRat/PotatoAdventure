@@ -43,6 +43,8 @@ void Boot()
 
     ts = new Utils::TickStabilizer(60, 8);
 
+    Graphics::Blend::Enable();
+
     main_texture = new Graphics::Texture(Graphics::ImageData::FromPNG("assets/texture.png"));
     main_texture->LinearInterpolation(0);
 
@@ -58,7 +60,6 @@ void Boot()
 void Main()
 {
     Backend::Start();
-Graphics::SetClearColor01({0.5,0.5,0.5,1});
     auto Tick = [&]
     {
 
@@ -66,9 +67,10 @@ Graphics::SetClearColor01({0.5,0.5,0.5,1});
     auto Render = [&]
     {
         Graphics::Clear();
+
         renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 10.0));
-        renderer->Sprite({150,100}, {32,16}).tex({0,0});
-        //renderer->Sprite(Input::MousePos(), {32,16}).tex({0,0});
+
+        renderer->Sprite(Input::MousePos(), {32,16}).tex({0,0});
     };
 
     while (1)

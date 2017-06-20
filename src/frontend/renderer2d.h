@@ -113,7 +113,7 @@ class Renderer2D
         float sprite_angle = 0;
 
         bool have_color = 0;
-        fvec3 sprite_colors[4] = {};
+        fvec3 sprite_colors[4] = {fvec3(0),fvec3(0),fvec3(0),fvec3(0)};
 
         bool have_tex_color_fac = 0;
         float tex_color_factors[4] = {1,1,1,1};
@@ -325,8 +325,6 @@ class Renderer2D
             fvec2 tex_b = {tex_a.x, tex_c.y};
             fvec2 tex_d = {tex_c.x, tex_a.y};
 
-            std::cout << dst_pos+d << '\n';
-
             renderer->render_queue->Insert({dst_pos + a, final_colors[0], tex_a, factors[0]},
                                            {dst_pos + b, final_colors[1], tex_b, factors[1]},
                                            {dst_pos + c, final_colors[2], tex_c, factors[2]},
@@ -339,18 +337,6 @@ class Renderer2D
     {
         return {this, pos, size};
     }
-
-    /*
-    void LowerRect(fvec2 pos, fvec2 sz, fvec2 tpos, fvec2 tsz, fvec2 center = {0,0}, float angle = 0, fvec4 color = {0,0,0,0}, float tex_color_fac = 1, float tex_alpha_fac = 1, float post_alpha_fac = 1)
-    {
-        center = center * sz / tsz;
-
-        tsz += tpos;
-        render_queue->Insert({pos,          color, tpos,           {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
-                             {{sz.x,pos.y}, color, {tsz.x,tpos.y}, {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
-                             {sz,           color, tsz,            {tex_color_fac, tex_alpha_fac, post_alpha_fac}},
-                             {{pos.x,sz.y}, color, {tpos.x,tsz.y}, {tex_color_fac, tex_alpha_fac, post_alpha_fac}});
-    }*/
 };
 
 /*
