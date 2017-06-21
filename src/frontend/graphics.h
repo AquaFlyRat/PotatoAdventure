@@ -715,9 +715,9 @@ namespace Graphics
                 float f = float(it.a) / 255.0f;
                 if (!std::isnormal(f))
                     continue;
-                it.r = std::max(std::lround(it.r / f), 255);
-                it.g = std::max(std::lround(it.g / f), 255);
-                it.b = std::max(std::lround(it.b / f), 255);
+                it.r = std::max(std::lround(it.r / f), 255l);
+                it.g = std::max(std::lround(it.g / f), 255l);
+                it.b = std::max(std::lround(it.b / f), 255l);
             }
         }
         void Empty(ivec2 new_size)
