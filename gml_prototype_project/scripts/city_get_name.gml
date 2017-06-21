@@ -17,7 +17,7 @@ if ct ==1{
     var lb = array_length_1d(name_farm_b)-1;
     var ib = " ";
     var lc = array_length_1d(name_farm_c)-1;
-    name = string(name_farm_a[irandom(la)])+string(ia)+string(name_farm_b[irandom(lb)])+string(ib)+string(name_farm_c[irandom(lc)])
+    name = string(name_farm_a[irandom(la)]) + string(ia)+string(name_farm_b[irandom(lb)])+string(ib)+string(name_farm_c[irandom(lc)])
 }
 if ct ==2{
     var la = array_length_1d(name_hunt_a)-1;

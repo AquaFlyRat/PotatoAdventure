@@ -1,1 +1,115 @@
-<CityNumberRange min="0" max="10"></CityNumberRange>
+<GenData>
+  <TextInfo>
+    <NameSection name="farm">
+      <TextSection order="0">
+        <Text>Honey</Text>
+        <Text>Barley</Text>
+        <Text>Wool</Text>
+      </TextSection>
+    
+      <TextSection order="1">
+        <Text>Ox</Text>
+        <Text>Wine</Text>
+        <Text>Hiil</Text>
+        <Text>Ford</Text>
+        <Text>Brew</Text>
+      </TextSection>
+    
+      <TextSection order="2">
+        <Text>Farm</Text>
+        <Text>Cottage</Text>
+        <Text>Grove</Text>
+        <Text>Brew</Text>		
+      </TextSection>
+    
+    </NameSection>
+  
+    <NameSection name="hunt">
+      <TextSection order="0">
+        <Text>Bull</Text>
+        <Text>Eagle</Text>
+        <Text>Wood</Text>
+        <Text>Stag</Text>			
+      </TextSection>
+    
+      <TextSection order="1">
+        <Text>Rest</Text>
+        <Text>Stream</Text>
+        <Text>Nest</Text>
+        <Text>Wood</Text>	
+      </TextSection>
+    
+      <TextSection order="2">
+        <Text>Lodge</Text>
+        <Text>Cabin</Text>
+        <Text>Camp</Text>
+        <Text>Hunt</Text>			
+      </TextSection>
+    </NameSection>
+  
+    <NameSection name="mill">
+      <TextSection order="0">
+        <Text>Timber</Text>
+        <Text>Pine</Text>
+        <Text>Wolf</Text>	
+      </TextSection>
+    
+      <TextSection order="1">
+        <Text>Wood</Text>
+        <Text>Fall</Text>
+        <Text>Forest</Text>	
+      </TextSection>
+    
+      <TextSection order="2">
+        <Text>Mill</Text>
+        <Text>Mill</Text>		
+      </TextSection>
+    </NameSection>
+  
+    <NameSection name="mine">
+      <TextSection order="0">
+        <Text>Stone</Text>
+        <Text>Gold</Text>
+        <Text>Iron</Text>	
+        <Text>Dark</Text>			
+      </TextSection>
+    
+      <TextSection order="1">
+        <Text>Shore</Text>
+        <Text>Falls</Text>
+        <Text>Gulch</Text>
+        <Text>Pit</Text>		
+      </TextSection>
+    
+      <TextSection order="2">
+        <Text>Mine</Text>
+        <Text>Keep</Text>		
+        <Text>Deep</Text>			
+      </TextSection>
+    </NameSection>
+  
+    <NameSection name="smithy">
+      <TextSection order="0">
+        <Text>Fire</Text>
+        <Text>Steel</Text>
+        <Text>Black</Text>	
+        <Text>Ember</Text>			
+      </TextSection>
+    
+      <TextSection order="1">
+        <Text>Hammer</Text>
+        <Text>Fall</Text>
+        <Text>Stone</Text>		
+      </TextSection>
+    
+      <TextSection order="2">
+        <Text>Forge</Text>
+        <Text>Smithy</Text>			
+      </TextSection>
+    </NameSection>
+  </TextInfo>
+
+  <CityData>
+    <CityNumberRange min="0" max="10"></CityNumberRange>
+  </CityData>
+</GenData>
