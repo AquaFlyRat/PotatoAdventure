@@ -3,6 +3,7 @@
 
 #include <random>
 #include <ctime>
+#include <vector>
 
 namespace Backend
 {
@@ -25,6 +26,13 @@ namespace Backend
         int RandomInt32(int max, int min)
         {
             return std::uniform_int_distribution<int>(max, min)(mt);
+        }
+
+        template <typename T>
+        T Choose(const std::vector<T>& items)
+        {
+            int index = RandomInt32(0, items.size() - 1);
+            return items[index];
         }
 
         static Random *Instance()
