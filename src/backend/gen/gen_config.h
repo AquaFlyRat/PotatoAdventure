@@ -2,6 +2,8 @@
 #define GEN_CONFIG_INCLUDED
 
 #include <RapidXML/rapidxml.hpp>
+#include <vector>
+#include "text.h"
 
 namespace Backend
 {
@@ -9,6 +11,8 @@ namespace Backend
     {
     private:
         rapidxml::xml_document<> *xmldoc;
+        std::vector<char> src;
+        std::vector<NameSection> names;
 
     public:
         ConfigFile();
@@ -21,6 +25,8 @@ namespace Backend
             static ConfigFile file;
             return &file;
         }
+
+        const std::vector<NameSection>& Names() const { return names; }
     };
 }
 

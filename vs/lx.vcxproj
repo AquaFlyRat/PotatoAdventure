@@ -41,6 +41,7 @@
     <ClInclude Include="..\src\backend\gen\city.h" />
     <ClInclude Include="..\src\backend\gen\city_generator.h" />
     <ClInclude Include="..\src\backend\gen\gen_config.h" />
+    <ClInclude Include="..\src\backend\gen\text.h" />
     <ClInclude Include="..\src\backend\gen\world.h" />
     <ClInclude Include="..\src\backend\gen\world_generator.h" />
     <ClInclude Include="..\src\frontend\audio.h" />

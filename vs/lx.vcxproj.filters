@@ -173,5 +173,8 @@
     <ClInclude Include="..\src\backend\gen\gen_config.h">
       <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\backend\gen\text.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
