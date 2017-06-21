@@ -1,9 +1,10 @@
 #ifndef TEXT_NAMES_INCLUDED
 #define TEXT_NAMES_INCLUDED
 
-#include <vector>
 #include <RapidXML/rapidxml.hpp>
-#include <stdlib.h>
+#include <cstdlib>
+#include <string>
+#include <vector>
 
 namespace Backend
 {
@@ -28,7 +29,7 @@ namespace Backend
                 int order = atoi(text_section->first_attribute("order")->value());
                 TextSection section;
                 section.order = order;
-                
+
                 rapidxml::xml_node<> *text = text_section->first_node("Text");
                 while (text != NULL)
                 {
