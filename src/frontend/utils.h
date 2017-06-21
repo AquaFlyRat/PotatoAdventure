@@ -23,9 +23,14 @@
 #include "strings.h"
 #include "system.h"
 
-#define ExecuteThisOnce() do {static bool flag = 0; if (flag) ::Sys::Error(Str("At function ", __func__, ": Statement at " __FILE__ ":", __LINE__, " was illegally executed twice.")); flag = 1;} while (0)
+#define ExecuteThisOnce() do {static bool flag = 0; if (flag) ::Sys::Error(::Strings::Str("At function ", __func__, ": Statement at " __FILE__ ":", __LINE__, " was illegally executed twice.")); flag = 1;} while (0)
 #define ExecuteThisOnceQuiet() do {static bool flag = 0; if (flag) ::Sys::Exit(); flag = 1;} while (0)
-#define Textify(...) #__VA_ARGS__
+
+#ifdef NDEBUG
+#  define Assert(text, ...) (void(0))
+#else
+#  define Assert(text, ...) (bool(__VA_ARGS__) || (::Sys::Error(::Strings::Str("Assertion failed at `" __FILE__ "`:", __LINE__, " in `", __func__, "()`.\nMessage: `", text, "`\nExpression: `" #__VA_ARGS__, '`')), 0), void(0))
+#endif
 
 namespace Utils
 {
@@ -238,74 +243,88 @@ namespace Utils
 
     class TickStabilizer
     {
-        uint64_t tick_len, begin_time;
-        unsigned int tick_limit;
-        bool lag_flag;
+        uint64_t tick_len;
+        int max_ticks;
 
-        TickStabilizer(const TickStabilizer &) = delete;
-        TickStabilizer(TickStabilizer &&) = delete;
-        TickStabilizer &operator=(const TickStabilizer &) = delete;
-        TickStabilizer &operator=(TickStabilizer &&) = delete;
+        uint64_t accumulator;
+        bool new_frame;
+
+        bool lag;
+
       public:
-        TickStabilizer(double freq, unsigned int max_tick_queued = 16)
+        TickStabilizer() : TickStabilizer(60) {}
+        TickStabilizer(double freq, int max_ticks_per_frame = 8)
         {
-            lag_flag = 0;
-            SetFreq(freq);
-            SetTickLimit(max_tick_queued);
+            SetFrequency(freq);
+            SetMaxTicksPerFrame(max_ticks_per_frame);
             Reset();
         }
 
-        bool Lag() // Returns 1 if max tick queue len is reached, then the flag is reseted to 0.
-        {
-            if (lag_flag)
-            {
-                lag_flag = 0;
-                return 1;
-            }
-            return 0;
-        }
-
-        void Reset()
-        {
-            begin_time = Clock::Time();
-        }
-
-        void SetFreq(double freq)
+        void SetFrequency(double freq)
         {
             tick_len = Clock::Tps() / freq;
         }
-
-        void SetTickLimit(unsigned int max_tick_queued = 64) // This limits an amout of ticks that would be made after an eternal lag.
+        void SetMaxTicksPerFrame(int n) // Set to 0 to disable the limit.
         {
-            tick_limit = max_tick_queued;
+            max_ticks = n;
+        }
+        void Reset()
+        {
+            accumulator = 0;
+            new_frame = 1;
+            lag = 0;
         }
 
-        bool Tick(uint64_t cur_time = Sys::FrameStartTime()) // Use it like this: `while (_.Tick()) {Your tick code}`
+        bool Lag() // Flag resets after this function is called. The flag is set to 1 if the amount of ticks per last frame was limited due to reaching the limit.
         {
-            if (cur_time - begin_time > tick_len)
+            if (lag)
             {
-                if (cur_time - begin_time > tick_len * tick_limit)
-                {
-                    begin_time = cur_time - tick_len * tick_limit;
-                    lag_flag = 1;
-                }
-                begin_time += tick_len;
+                lag = 0;
                 return 1;
             }
             return 0;
         }
-        bool TickNeeded(uint64_t cur_time = Sys::FrameStartTime()) // Only checks if tick is needed without performing it.
+
+        double Frequency() const
         {
-            return cur_time - begin_time > tick_len;
+            return Utils::Clock::Tps() / double(tick_len);
+        }
+        uint64_t ClockTicksPerTick() const
+        {
+            return tick_len;
+        }
+        int MaxTicksPerFrame() const
+        {
+            return max_ticks;
         }
 
-        double Time(uint64_t cur_time = Sys::FrameStartTime()) // Returns time since last tick, measured in ticks. Useful for rendering moving things when FPS is higher than tickrate.
+        bool Tick(uint64_t delta = Sys::FrameDeltaClockTicks())
         {
-            return double(cur_time - begin_time) / tick_len;
+            if (new_frame)
+                accumulator += delta;
+
+            if (accumulator >= tick_len)
+            {
+                if (max_ticks && accumulator > tick_len * max_ticks)
+                {
+                    accumulator = tick_len * max_ticks;
+                    lag = 1;
+                }
+                accumulator -= tick_len;
+                new_frame = 0;
+                return 1;
+            }
+            else
+            {
+                new_frame = 1;
+                return 0;
+            }
         }
 
-        uint64_t TickLen()       {return tick_len;}
-        unsigned int TickLimit() {return tick_limit;}
+        double Time() const
+        {
+            return accumulator / double(tick_len);
+        }
     };
 
     class IO

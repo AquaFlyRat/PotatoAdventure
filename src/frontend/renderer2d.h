@@ -3,6 +3,7 @@
 
 #include "graphics.h"
 #include "math.h"
+#include "utils.h"
 
 class Renderer2D
 {
@@ -124,6 +125,8 @@ class Renderer2D
         bool absolute_pos = 0;
         bool absolute_tex_pos = 0;
 
+        bool sprite_flip_x = 0, sprite_flip_y = 0;
+
         using rvalue = DrawCommand &&;
 
       public:
@@ -140,49 +143,57 @@ class Renderer2D
 
         DrawCommand(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
 
-        rvalue tex(fvec2 pos, fvec2 sz) &&
+        rvalue tex(fvec2 pos, fvec2 sz)
         {
-            assert(!have_texture);
+            Assert("2D renderer: Sprite texture specified twice.", !have_texture);
             have_texture = 1;
 
             texture_pos = pos;
             texture_size = sz;
             return (rvalue)*this;
         }
-        rvalue tex(fvec2 pos) &&
+        rvalue tex(fvec2 pos)
         {
-            assert(!have_texture);
+            Assert("2D renderer: Sprite texture specified twice.", !have_texture);
             have_texture = 1;
 
             texture_pos = pos;
             texture_size = dst_size;
             return (rvalue)*this;
         }
-        rvalue center(fvec2 c) &&
+        rvalue center(fvec2 c)
         {
-            assert(!have_center);
+            Assert("2D renderer: Sprite center specified twice.", !have_center);
             have_center = 1;
 
             sprite_center = c;
             return (rvalue)*this;
         }
-        rvalue angle(float a) &&
+        rvalue center()
+        {
+            Assert("2D renderer: Sprite center specified twice.", !have_center);
+            have_center = 1;
+
+            sprite_center = dst_size / 2;
+            return (rvalue)*this;
+        }
+        rvalue angle(float a)
         {
             sprite_angle = a;
             return (rvalue)*this;
         }
-        rvalue color(fvec3 c) &&
+        rvalue color(fvec3 c)
         {
-            assert(!have_color);
+            Assert("2D renderer: Sprite color specified twice.", !have_color);
             have_color = 1;
 
             for (auto &it : sprite_colors)
                 it = c;
             return (rvalue)*this;
         }
-        rvalue color(fvec3 a, fvec3 b, fvec3 c, fvec3 d) &&
+        rvalue color(fvec3 a, fvec3 b, fvec3 c, fvec3 d)
         {
-            assert(!have_color);
+            Assert("2D renderer: Sprite color specified twice.", !have_color);
             have_color = 1;
 
             sprite_colors[0] = a;
@@ -191,16 +202,16 @@ class Renderer2D
             sprite_colors[3] = d;
             return (rvalue)*this;
         }
-        rvalue mix(float x) && // 0 - fill with color (default if color is provided), 1 - use texture
+        rvalue mix(float x) // 0 - fill with color (default if color is provided), 1 - use texture
         {
-            assert(!have_tex_color_fac);
+            Assert("2D renderer: Sprite color mix factor specified twice.", !have_tex_color_fac);
             have_tex_color_fac = 1;
 
             for (auto &it : tex_color_factors)
                 it = x;
             return (rvalue)*this;
         }
-        rvalue mix(float a, float b, float c, float d) &&
+        rvalue mix(float a, float b, float c, float d)
         {
             assert(!have_tex_color_fac);
             have_tex_color_fac = 1;
@@ -211,13 +222,13 @@ class Renderer2D
             tex_color_factors[3] = d;
             return (rvalue)*this;
         }
-        rvalue alpha(float a) &&
+        rvalue alpha(float a)
         {
             for (auto &it : sprite_alpha)
                 it = a;
             return (rvalue)*this;
         }
-        rvalue alpha(float a, float b, float c, float d) &&
+        rvalue alpha(float a, float b, float c, float d)
         {
             sprite_alpha[0] = a;
             sprite_alpha[1] = b;
@@ -225,13 +236,13 @@ class Renderer2D
             sprite_alpha[3] = d;
             return (rvalue)*this;
         }
-        rvalue opacity(float o) && // 1 - normal blending, 0 - additive blending
+        rvalue opacity(float o) // 1 - normal blending, 0 - additive blending
         {
             for (auto &it : sprite_opacity)
                 it = o;
             return (rvalue)*this;
         }
-        rvalue opacity(float a, float b, float c, float d) && // 1 - normal blending, 0 - additive blending
+        rvalue opacity(float a, float b, float c, float d) // 1 - normal blending, 0 - additive blending
         {
             sprite_opacity[0] = a;
             sprite_opacity[1] = b;
@@ -239,14 +250,24 @@ class Renderer2D
             sprite_opacity[3] = d;
             return (rvalue)*this;
         }
-        rvalue absolute(bool x = 1) && // Interpret size as a position of the second corner
+        rvalue absolute(bool x = 1) // Interpret size as a position of the second corner
         {
             absolute_pos = x;
             return (rvalue)*this;
         }
-        rvalue absolute_tex(bool x = 1) && // Interpret texture size as a position of the second corner
+        rvalue absolute_tex(bool x = 1) // Interpret texture size as a position of the second corner
         {
             absolute_tex_pos = x;
+            return (rvalue)*this;
+        }
+        rvalue flip_x(bool f = 1) // Flips texture horizontally if it was specified. Updates the center accordingly if it was specified.
+        {
+            sprite_flip_x = f;
+            return (rvalue)*this;
+        }
+        rvalue flip_y(bool f = 1) // Flips texture vertically if it was specified. Updates the center accordingly if it was specified.
+        {
+            sprite_flip_y = f;
             return (rvalue)*this;
         }
 
@@ -255,8 +276,8 @@ class Renderer2D
             if (!renderer)
                 return;
 
-            assert(have_texture || have_color);
-            assert(absolute_pos + have_center < 2);
+            Assert("2D renderer: Attempt to render a sprite with no texture nor color specified.", have_texture || have_color);
+            Assert("2D renderer: Attempt to render a sprite with absolute corner coodinates with a center specified.", absolute_pos + have_center < 2);
 
             if (absolute_pos)
             {
@@ -304,6 +325,21 @@ class Renderer2D
             for (int i = 0; i < 4; i++)
                 factors[i].z = sprite_opacity[i];
 
+            if (sprite_flip_x)
+            {
+                texture_pos.x += texture_size.x;
+                texture_size.x = -texture_size.x;
+                if (have_center)
+                    sprite_center.x = dst_size.x - sprite_center.x;
+            }
+            if (sprite_flip_y)
+            {
+                texture_pos.y += texture_size.y;
+                texture_size.y = -texture_size.y;
+                if (have_center)
+                    sprite_center.y = dst_size.y - sprite_center.y;
+            }
+
             fvec2 a = -sprite_center;
             fvec2 c = dst_size - sprite_center;
 
@@ -312,6 +348,8 @@ class Renderer2D
 
             if (sprite_angle != 0)
             {
+                Assert("2D renderer: Attempt to render a rotated sprite with no center specified.", have_center);
+
                 fmat2 m = fmat2::rotate2D(sprite_angle);
                 a = m /mul/ a;
                 b = m /mul/ b;
