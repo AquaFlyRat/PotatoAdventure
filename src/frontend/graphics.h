@@ -703,9 +703,9 @@ namespace Graphics
             for (auto &it : data)
             {
                 float f = float(it.a) / 255.0f;
-                it.r = std::round(it.r * f);
-                it.g = std::round(it.g * f);
-                it.b = std::round(it.b * f);
+                it.r = std::lround(it.r * f);
+                it.g = std::lround(it.g * f);
+                it.b = std::lround(it.b * f);
             }
         }
         void Demultiply()
@@ -715,9 +715,9 @@ namespace Graphics
                 float f = float(it.a) / 255.0f;
                 if (!std::isnormal(f))
                     continue;
-                it.r = std::max((int)std::round(it.r / f), 255);
-                it.g = std::max((int)std::round(it.g / f), 255);
-                it.b = std::max((int)std::round(it.b / f), 255);
+                it.r = std::max(std::lround(it.r / f), 255);
+                it.g = std::max(std::lround(it.g / f), 255);
+                it.b = std::max(std::lround(it.b / f), 255);
             }
         }
         void Empty(ivec2 new_size)
