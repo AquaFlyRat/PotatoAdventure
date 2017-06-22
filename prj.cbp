@@ -121,7 +121,6 @@
 		</Linker>
 		<Unit filename="lib/glfl.cpp" />
 		<Unit filename="src/backend/backend_main.cpp" />
-		<Unit filename="src/backend/backend_utils.h" />
 		<Unit filename="src/backend/gen/backend_utils.h" />
 		<Unit filename="src/backend/gen/city.cpp" />
 		<Unit filename="src/backend/gen/city.h" />
@@ -129,6 +128,7 @@
 		<Unit filename="src/backend/gen/city_generator.h" />
 		<Unit filename="src/backend/gen/gen_config.cpp" />
 		<Unit filename="src/backend/gen/gen_config.h" />
+		<Unit filename="src/backend/gen/text.h" />
 		<Unit filename="src/backend/gen/world.h" />
 		<Unit filename="src/backend/gen/world_generator.h" />
 		<Unit filename="src/frontend/audio.cpp" />

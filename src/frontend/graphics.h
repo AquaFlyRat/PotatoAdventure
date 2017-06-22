@@ -192,11 +192,13 @@ namespace Graphics
         {
             template <unsigned int N, typename F, typename ...P> struct At
             {
-                static auto &func(VertexFormat<F, P...> *th) {return At<N-1, P...>::func(&th->next);}
+                static       auto &func(      VertexFormat<F, P...> *th) {return At<N-1, P...>::func(&th->next);}
+                static const auto &func(const VertexFormat<F, P...> *th) {return At<N-1, P...>::func(&th->next);}
             };
             template <typename F, typename ...P> struct At<0, F, P...>
             {
-                static auto &func(VertexFormat<F, P...> *th) {return th->first;}
+                static       auto &func(      VertexFormat<F, P...> *th) {return th->first;}
+                static const auto &func(const VertexFormat<F, P...> *th) {return th->first;}
             };
         }
 
@@ -208,7 +210,8 @@ namespace Graphics
             VertexFormat() {}
             VertexFormat(const F &f, const P &... p) : first(f), next(p...) {}
             template <unsigned int N> using TypeAt = typename Utils::TypeAt<N, F, P...>::type;
-            template <unsigned int N> auto &At() {return InternalPackTemplates::At<N, F, P...>::func(this);}
+            template <unsigned int N>       auto &At()       {return InternalPackTemplates::At<N, F, P...>::func(this);}
+            template <unsigned int N> const auto &At() const {return InternalPackTemplates::At<N, F, P...>::func(this);}
         };
         template <typename F> struct VertexFormat<F>
         {
@@ -217,7 +220,8 @@ namespace Graphics
             VertexFormat() {}
             VertexFormat(const F &f) : first(f) {}
             template <unsigned int N> using TypeAt = typename Utils::TypeAt<N, F>::type;
-            template <unsigned int N> auto &At() {return InternalPackTemplates::At<N, F>::func(this);}
+            template <unsigned int N>       auto &At()       {return InternalPackTemplates::At<N, F>::func(this);}
+            template <unsigned int N> const auto &At() const {return InternalPackTemplates::At<N, F>::func(this);}
         };
     }
 
@@ -813,17 +817,6 @@ namespace Graphics
             line_skip = lskip;
         }
 
-        void AddGlyph(uint16_t glyph, ivec2 pos, ivec2 size, ivec2 offset, int advance)
-        {
-            int sub_buffer = glyph / sub_buffer_size;
-            if (!glyph_map[sub_buffer].size())
-            {
-                glyph_map[sub_buffer].resize(sub_buffer_size);
-                for (int i = 0; i < sub_buffer_size; i++)
-                    glyph_map[sub_buffer][i] = Glyph{};
-            }
-            glyph_map[sub_buffer][glyph % sub_buffer_size] = {1, pos, size, offset, advance};
-        }
 
       public:
         FontData() {}
@@ -842,14 +835,6 @@ namespace Graphics
                 AddGlyph(enc[i], {src.x + int(i) % row_len * glyph_sz.x, src.y + int(i) / row_len * glyph_sz.y}, glyph_sz, {0, -asc}, adv);
             }
         }
-        /*
-        FontData(ArrayView<uint16_t> enc, ivec2 src, ivec2 glyph_sz, int row_len, int asc, int adv)
-            : FontData(enc, src, glyph_sz, row_len, asc, adv, glyph_sz.y) {}
-
-        FontData(ArrayView<uint16_t> enc, ivec2 src, ivec2 glyph_sz, int row_len, int asc)
-            : FontData(enc, src, glyph_sz, row_len, asc, glyph_sz.x, glyph_sz.y) {}
-        FontData(ArrayView<uint16_t> enc, ivec2 src, ivec2 glyph_sz, int row_len)
-            : FontData(enc, src, glyph_sz, row_len, (glyph_sz.y+1)/2, glyph_sz.x, glyph_sz.y) {}*/
 
         bool HasGlyph(uint16_t glyph) const
         {
@@ -886,18 +871,37 @@ namespace Graphics
         int Ascent() const {return ascent;}
         int Descent() const {return descent;}
         int LineSkip() const {return line_skip;} // This is an Y offset between lines. Height of the font is already added to it. Using this is not mandratory.
+
+
+        void AddGlyph(uint16_t glyph, ivec2 pos, ivec2 size, ivec2 offset, int advance)
+        {
+            int sub_buffer = glyph / sub_buffer_size;
+            if (!glyph_map[sub_buffer].size())
+            {
+                glyph_map[sub_buffer].resize(sub_buffer_size);
+                for (int i = 0; i < sub_buffer_size; i++)
+                    glyph_map[sub_buffer][i] = Glyph{};
+            }
+            glyph_map[sub_buffer][glyph % sub_buffer_size] = {1, pos, size, offset, advance};
+        }
     };
 
     class Font
     {
         TTF_Font *handle;
         Utils::BinaryInput stream;
+        std::vector<char> stream_data;
 
       public:
         void Open(Utils::BinaryInput input, int ptsize, int index = 0) // Warning: The file will be used while the font object is alive and opened.
         {
             Close();
-            stream = (Utils::BinaryInput &&) input;
+            auto file_size = input.Size();
+            if (file_size == -1)
+                Exceptions::IO::CantParse(stream.Name(), "Can't get file font file size.");
+            stream_data.resize(file_size);
+            input.ReadEx(stream_data.data(), file_size);
+            stream.OpenConstMemory(stream_data.data(), file_size);
             handle = TTF_OpenFontIndexRW((SDL_RWops *)stream.RWops(), 0, ptsize, index);
             if (!handle)
                 Exceptions::IO::CantParse(stream.Name(), Str("SDL ttf plugin is unable to parse font: ", TTF_GetError()));
@@ -909,6 +913,7 @@ namespace Graphics
                 TTF_CloseFont(handle);
                 handle = 0;
                 stream.Close();
+                stream_data.clear();
             }
         }
 
@@ -927,7 +932,7 @@ namespace Graphics
         Font(const Font &) = delete;
         Font &operator=(const Font &) = delete;
 
-        Font(Font &&o) : stream((Utils::BinaryInput &&) o.stream)
+        Font(Font &&o) : stream((Utils::BinaryInput &&) o.stream), stream_data((decltype(stream_data) &&) o.stream_data)
         {
             handle = o.handle;
             o.handle = 0;
@@ -939,6 +944,7 @@ namespace Graphics
             handle = o.handle;
             o.handle = 0;
             stream = (Utils::BinaryInput &&) o.stream;
+            stream_data = (decltype(stream_data) &&) o.stream_data;
             return *this;
         }
 
@@ -1022,8 +1028,8 @@ namespace Graphics
          *    ##  ##    ##    ##                  | Ascent        |
          *     ####     ##    ##                  |               | Height
          *      ##      ##    ##                  |               |
-         * ---- ## ----- ####### ------ Baseline  /   \           |
-         *                    ##                      | Descent   |
+         * .....##.......#######........Baseline../...            |
+         *                    ##                      \ Descent   |
          * . . . . . .  ####### . . . . . . . . . . . / . . . . . /
          */
 
@@ -1064,7 +1070,7 @@ namespace Graphics
          *  |..o.......o...  maxY
          *  |  : #### #:  :
          *  |  :##  ## :  :
-         *  |  :##   ##:  :  advance (horisontal)
+         *  |  :##   ##:  :  advance (horizontal)
          *  |  : ##### :  : /
          *  |  :##     :  :/
          *  0----#####----o----X  (baseline)
@@ -1121,6 +1127,7 @@ namespace Graphics
 
         enum Quality {fast, fancy};
 
+        /*
         // Uses UTF-16 for glyphs.
         void RenderGlyphs(FontData &font_data, ImageData &img, ivec2 dst, ivec2 dstsz, ArrayView<uint16_t> glyphs, bool outline = 0, Quality quality = fancy, u8vec4 color = {255,255,255,255})
         {
@@ -1141,7 +1148,7 @@ namespace Graphics
             int asc = Ascent();
 
             int column_h = 1; // 1 instead of 0 to avoid a stupid bug when no single glyph can fit into a destination rect.
-
+        */
             /*
              * Corner points:
              * img.At(dst + ivec2(dstsz.x-2, 0)) = {  0,  0,  0,255};
@@ -1154,7 +1161,7 @@ namespace Graphics
              * img.At(dst + dstsz + ivec2(-2,-1)) = {  0,  0,  0,255};
              * img.At(dst + dstsz + ivec2(-1,-1)) = {255,255,255,255};
              */
-
+        /*
             dst += outline;
             dstsz -= outline;
 
@@ -1236,6 +1243,24 @@ namespace Graphics
                 arr[i] = u8decode(ptr, &ptr);
             }
             RenderGlyphs(font_data, img, dst, dstsz, {arr.data(), len}, outline, quality, color);
+        }
+        */
+    };
+
+    class FontAtlas
+    {
+        struct Glyph
+        {
+            ivec2 offset, size;
+            int advance;
+        };
+
+        Utils::NestedVector<Glyph> data;
+
+      public:
+        FontAtlas()
+        {
+            "Write me!";
         }
     };
 
