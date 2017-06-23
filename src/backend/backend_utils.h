@@ -11,7 +11,7 @@ namespace Backend
     {
         ReallyBad = 0,
         Bad = 1,
-        Neurtal = 2,
+        Neutral = 2,
         Good = 3,
         Great = 4
     };
