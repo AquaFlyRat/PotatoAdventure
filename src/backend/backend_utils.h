@@ -7,6 +7,15 @@
 
 namespace Backend
 {
+    enum class GoodnessRating
+    {
+        ReallyBad = 0,
+        Bad = 1,
+        Neurtal = 2,
+        Good = 3,
+        Great = 4
+    };
+
     struct Random
     {
     private:
@@ -23,9 +32,10 @@ namespace Backend
             return mt();
         }
 
-        int RandomInt32(int max, int min)
+        /// Random number between the rannge of min -> max (Inclusive)
+        int RandomInt32(int min, int max)
         {
-            return std::uniform_int_distribution<int>(max, min)(mt);
+            return std::uniform_int_distribution<int>(min, max)(mt);
         }
 
         template <typename T>

@@ -19,6 +19,9 @@ namespace Backend
         const char *place_type_name;
         std::vector<TextSection> sections;
 
+        // DO NOTHING! HUAHAHAH
+        NameSection() {}
+
         NameSection(rapidxml::xml_node<> *name_section_node)
         {
             place_type_name = static_cast<const char*>(name_section_node->first_attribute("name")->value());

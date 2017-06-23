@@ -10,7 +10,7 @@
       <TextSection order="1">
         <Text>Ox</Text>
         <Text>Wine</Text>
-        <Text>Hiil</Text>
+        <Text>Hill</Text>
         <Text>Ford</Text>
         <Text>Brew</Text>
       </TextSection>
@@ -110,6 +110,6 @@
   </TextInfo>
 
   <CityData>
-    <CityNumberRange min="0" max="10"></CityNumberRange>
+    <CityNumberRange min="5" max="10"></CityNumberRange>
   </CityData>
 </GenData>

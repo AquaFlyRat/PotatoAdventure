@@ -3,6 +3,7 @@
 
 #include <RapidXML/rapidxml.hpp>
 #include <vector>
+#include <map>
 #include "text.h"
 
 namespace Backend
@@ -12,8 +13,8 @@ namespace Backend
     private:
         rapidxml::xml_document<> *xmldoc;
         std::vector<char> src;
-        std::vector<NameSection> names;
-
+        std::map<std::string, NameSection> names;
+        
     public:
         ConfigFile();
         ~ConfigFile();
@@ -26,7 +27,7 @@ namespace Backend
             return &file;
         }
 
-        const std::vector<NameSection>& Names() const { return names; }
+        const std::map<std::string, NameSection>& Names() const { return names; }
     };
 }
 

@@ -167,14 +167,14 @@
     <ClInclude Include="..\src\backend\gen\city_generator.h">
       <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\backend\gen\backend_utils.h">
-      <Filter>Header Files\Backend</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\backend\gen\gen_config.h">
       <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
     <ClInclude Include="..\src\backend\gen\text.h">
       <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\backend_utils.h">
+      <Filter>Header Files\Backend</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

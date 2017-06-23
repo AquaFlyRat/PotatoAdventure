@@ -21,7 +21,8 @@ ConfigFile::ConfigFile()
     while (name_section)
     {
         NameSection section(name_section);
-        names.push_back(section);
+        const char *name = section.place_type_name;
+        names.insert(std::make_pair(std::string(name), section));
         name_section = name_section->next_sibling("NameSection");
     }
 }
