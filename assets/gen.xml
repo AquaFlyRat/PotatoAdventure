@@ -107,8 +107,44 @@
         <Text>Smithy</Text>			
       </TextSection>
     </NameSection>
+	
+	<NamesInfo name="tmp">
+		<TextSection name="vowels">
+			<Text>a</Text>
+			<Text>e</Text>
+			<Text>i</Text>
+			<Text>o</Text>
+			<Text>u</Text>		
+		</TextSection>
+		
+		<TextSection name="consonants">
+			<Text>b</Text>
+			<Text>c</Text>
+			<Text>d</Text>
+			<Text>f</Text>
+			<Text>g</Text>
+			<Text>h</Text>
+			<Text>j</Text>
+			<Text>k</Text>
+			<Text>l</Text>
+			<Text>m</Text>
+			<Text>n</Text>
+			<Text>p</Text>
+			<Text>q</Text>
+			<Text>r</Text>
+			<Text>s</Text>
+			<Text>t</Text>
+			<Text>v</Text>
+			<Text>x</Text>
+			<Text>z</Text>
+			<Text>sh</Text>
+			<Text>th</Text>
+			<Text>ch</Text>	
+		</TextSection>
+	</NamesInfo>
+	
   </TextInfo>
-
+	
   <CityData>
     <CityNumberRange min="5" max="10"></CityNumberRange>
   </CityData>

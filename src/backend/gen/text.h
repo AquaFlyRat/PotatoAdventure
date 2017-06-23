@@ -12,6 +12,7 @@ namespace Backend
     {
         std::vector<std::string> text;
         int order;
+        const char *name;
     };
 
     struct NameSection
@@ -32,6 +33,11 @@ namespace Backend
                 int order = atoi(text_section->first_attribute("order")->value());
                 TextSection section;
                 section.order = order;
+                rapidxml::xml_attribute<> *name_attrib = text_section->first_attribute("name");
+                if (name_attrib != nullptr)
+                {
+                    section.name = name_attrib->value();
+                }
 
                 rapidxml::xml_node<> *text = text_section->first_node("Text");
                 while (text != NULL)

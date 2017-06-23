@@ -4,7 +4,7 @@
 #include "text.h"
 #include "city.h"
 #include <stdio.h>
-
+#include "entity_names_gen.h"
 using namespace Backend;
 
 void CityGenerator::GenerateAll()
@@ -23,4 +23,7 @@ void CityGenerator::GenerateAll()
         City::Trade trade = static_cast<City::Trade>(Random::Instance()->RandomInt32(0, 4));
         this->citys.push_back(City(trade));
     }
+
+    EntityNamesGenerator gen;
+    gen.GenerateName(Gender::Male);
 }

@@ -176,5 +176,8 @@
     <ClInclude Include="..\src\backend\backend_utils.h">
       <Filter>Header Files\Backend</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\backend\gen\entity_names_gen.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

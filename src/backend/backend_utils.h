@@ -16,6 +16,12 @@ namespace Backend
         Great = 4
     };
 
+    enum class Gender
+    {
+        Male,
+        Female
+    };
+
     struct Random
     {
     private:
@@ -36,6 +42,11 @@ namespace Backend
         int RandomInt32(int min, int max)
         {
             return std::uniform_int_distribution<int>(min, max)(mt);
+        }
+
+        bool RandomBoolean()
+        {
+            return RandomInt32(0, 1) ? true : false;    // this technically could probably be return RandomInt32(0,1) == 1
         }
 
         template <typename T>

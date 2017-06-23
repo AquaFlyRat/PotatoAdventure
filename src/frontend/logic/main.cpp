@@ -54,6 +54,7 @@ void Boot()
     renderer->EnableShader();
 
     Sys::SetCurrentFunction(Main);
+    Graphics::Font font;
 }
 
 void Main()
