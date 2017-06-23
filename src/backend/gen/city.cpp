@@ -20,7 +20,7 @@ City::City(Trade trade): trade(trade)
     case Trade::Farm:
         std::string ia = random->Choose(spaceOrNot);
         std::string ib = " ";
-
+        
         break;
     }
 }
