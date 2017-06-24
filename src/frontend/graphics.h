@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <initializer_list>
 #include <type_traits>
 #include <typeinfo>
@@ -1496,9 +1497,8 @@ namespace Graphics
 
         enum Quality {fast, fancy};
 
-        // Returns 1 on success.
         // If `img` is clean, then it's resized to the glyph size and `dst` is ignored.
-        bool RenderGlyph(ImageData &img, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255})
+        bool RenderGlyph(ImageData &img, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255}) // Returns 1 on success.
         {
             if (!GlyphExists(glyph))
                 return 0;
@@ -1560,7 +1560,6 @@ namespace Graphics
             tex.SetSubData(dst, img);
             return 1;
         }
-
 
         /*
         // Uses UTF-16 for glyphs.
@@ -1680,6 +1679,136 @@ namespace Graphics
             RenderGlyphs(font_data, img, dst, dstsz, {arr.data(), len}, outline, quality, color);
         }
         */
+    };
+
+    class GlyphList
+    {
+      public:
+        using kerning_func_t = std::function<int (uint16_t, uint16_t)>;
+
+      private:
+        template <typename T, unsigned int SubArraySize> class Catalog
+        {
+          public:
+            using value_type = T;
+            using size_type = int;
+
+          private:
+            struct Element
+            {
+                bool exists = 0;
+                T object;
+            };
+
+            struct SubArray
+            {
+                int size = 0;
+                Element data[SubArraySize];
+            };
+
+            std::vector<SubArray> data;
+
+          public:
+            constexpr Catalog() {}
+            Catalog(size_type full_size) : data((full_size + SubArraySize - 1) / SubArraySize) {}
+
+            void alloc(size_type full_size)
+            {
+                free();
+                data.resize((full_size + SubArraySize - 1) / SubArraySize);
+            }
+            void free()
+            {
+                data.clear();
+            }
+
+            [[nodiscard]] bool exists(size_type index) const
+            {
+                const auto ref = data[index / SubArraySize];
+                if (ref.size == 0)
+                    return 0;
+                return ref.data[index % SubArraySize].exists;
+            }
+
+            T &add(size_type index)
+            {
+                auto ref = data[index / SubArraySize];
+                if (ref.size == 0)
+                    ref.data.resize(SubArraySize);
+                auto element_ref = ref.data[index % SubArraySize];
+                if (!element_ref.exists)
+                {
+                    ref.size++;
+                    element_ref.exists = 1;
+                }
+                return element_ref.object;
+            }
+
+            void remove(size_type index)
+            {
+                auto ref = data[index / SubArraySize];
+                if (ref.size == 0)
+                    return;
+                auto element_ref = ref.data[index % SubArraySize];
+                if (element_ref.exists)
+                {
+                    ref.size--;
+                    element_ref.exists = 0;
+                    if (ref.size == 0)
+                        ref.data.clear();
+                }
+            }
+
+            template <typename I> [[nodiscard]]       T &operator[](I index)       {return data[index / SubArraySize].data[index % SubArraySize].object;}
+            template <typename I> [[nodiscard]] const T &operator[](I index) const {return data[index / SubArraySize].data[index % SubArraySize].object;}
+        };
+
+        struct Glyph
+        {
+            ivec2 pos, size, offset;
+            int advance;
+        };
+
+        Catalog<Glyph, 256> glyphs{0x10000};
+
+        kerning_func_t kerning_func;
+
+      public:
+
+        GlyphList()
+        {
+            SetKerningFunction();
+        }
+
+        GlyphList(kerning_func_t func)
+        {
+            SetKerningFunction((kerning_func_t &&)func);
+        }
+
+        // Font pointer is used only to obtain kerning information when requested. Everything else is cached.
+        GlyphList(const Font *font)
+        {
+            SetFont(font);
+        }
+
+        void SetFont(const Font *font)
+        {
+            SetKerningFunction([font](uint16_t a, uint16_t b){return font->GlyphKerning(a,b);});
+        }
+        void SetKerningFunction(kerning_func_t func = [](uint16_t, uint16_t){return 0;})
+        {
+            kerning_func = (kerning_func_t &&)func;
+        }
+
+        void AddGlyph()
+        {
+            "Write me!";
+        }
+
+        void RemoveGlyph()
+        {
+
+        }
     };
 
 
