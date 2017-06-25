@@ -552,11 +552,8 @@ namespace Graphics
     }
 
 
-    Utils::PoolManager<int> &Texture::GetPool()       {return texture_pool_2d;}
-    GLint                    Texture::GetTargetName() {return GL_TEXTURE_2D;}
-
-    Utils::PoolManager<int> &TextureCube::GetPool()       {return texture_pool_cubemap;}
-    GLint                    TextureCube::GetTargetName() {return GL_TEXTURE_CUBE_MAP;}
+    Utils::PoolManager<int> &Texture::GetPool()     {return texture_pool_2d;}
+    Utils::PoolManager<int> &TextureCube::GetPool() {return texture_pool_cubemap;}
 
     GLuint Shader::binding = 0;
 
