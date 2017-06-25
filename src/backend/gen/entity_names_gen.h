@@ -19,7 +19,7 @@ namespace Backend
 
             rapidxml::xml_node<> *names_info = ConfigFile::Instance()->GetXMLDocument()->first_node("GenData")->first_node("TextInfo")->first_node("NamesInfo");
             // Commented out to fix crash;
-/*            NameSection name_section(names_info);
+            NameSection name_section(names_info);
 
             std::string random_vowel_1 = random->Choose(name_section.sections[0].text);
             std::string random_vowel_2 = random->Choose(name_section.sections[0].text);
@@ -29,13 +29,28 @@ namespace Backend
             std::string random_cons_2 = random->Choose(name_section.sections[1].text);
             std::string random_cons_3 = random->Choose(name_section.sections[1].text);
 
-            */
+            std::string name;
             switch (gender)
             {
             case Gender::Male:
+                if (random->RandomBoolean()) {
+                    name = random_vowel_1 + random_cons_1 + random_vowel_2 + random_cons_2;
+                }
+                else {
+                    name = random_cons_1 + random_vowel_1 + random_cons_2 + random_vowel_2 + random_cons_3;
+                }
+                break;
+            case Gender::Female:
+                if (random->RandomBoolean()) {
+                    name = random_cons_1 + random_vowel_1 + random_cons_2 + random_vowel_2;
+                }
+                else {
+                    name = random_vowel_1 + random_cons_1 + random_vowel_2 + random_cons_2 + random_vowel_3;
+                }
                 break;
             }
-            return std::string();
+
+            return name;
         }
     };
 }

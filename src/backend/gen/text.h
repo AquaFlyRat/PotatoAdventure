@@ -30,7 +30,12 @@ namespace Backend
             rapidxml::xml_node<> *text_section = name_section_node->first_node("TextSection");
             while (text_section != NULL)
             {
-                int order = atoi(text_section->first_attribute("order")->value());
+                rapidxml::xml_attribute<> *order_attrib = text_section->first_attribute("order");
+                int order = -1;
+                if (order_attrib != nullptr)
+                {
+                    order = atoi(order_attrib->value());
+                }
                 TextSection section;
                 section.order = order;
                 rapidxml::xml_attribute<> *name_attrib = text_section->first_attribute("name");

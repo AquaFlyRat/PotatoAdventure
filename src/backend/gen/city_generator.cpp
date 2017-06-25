@@ -25,5 +25,8 @@ void CityGenerator::GenerateAll()
     }
 
     EntityNamesGenerator gen;
-    gen.GenerateName(Gender::Male);
+    std::string n1 = gen.GenerateName(Gender::Male);
+    std::string n2 = gen.GenerateName(Gender::Female);
+    std::string n3 = gen.GenerateName(Gender::Male);
+    std::string n4 = gen.GenerateName(Gender::Female);
 }
