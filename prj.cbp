@@ -130,7 +130,9 @@
 		<Unit filename="src/backend/gen/gen_config.cpp" />
 		<Unit filename="src/backend/gen/gen_config.h" />
 		<Unit filename="src/backend/gen/text.h" />
+		<Unit filename="src/backend/gen/world.cpp" />
 		<Unit filename="src/backend/gen/world.h" />
+		<Unit filename="src/backend/gen/world_generator.cpp" />
 		<Unit filename="src/backend/gen/world_generator.h" />
 		<Unit filename="src/frontend/audio.cpp" />
 		<Unit filename="src/frontend/audio.h" />

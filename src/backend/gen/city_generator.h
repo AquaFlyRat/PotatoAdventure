@@ -14,6 +14,7 @@ namespace Backend
         int               city_count;
     public:
         void GenerateAll();
+        const std::vector<City>& Citys() const { return citys; }
     };
 }
 

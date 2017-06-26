@@ -12,7 +12,8 @@ namespace Backend
 
     void Start()
     {
-        CityGenerator citys;
-        citys.GenerateAll();
+        WorldGenerator worldGen;
+        World* world = worldGen.GenerateWorld();
+        printf("%i\n", world->GetCitys().size());
     }
 }

@@ -18,7 +18,7 @@ namespace Backend
 
 
             rapidxml::xml_node<> *names_info = ConfigFile::Instance()->GetXMLDocument()->first_node("GenData")->first_node("TextInfo")->first_node("NamesInfo");
-            // Commented out to fix crash;
+            
             NameSection name_section(names_info);
 
             std::string random_vowel_1 = random->Choose(name_section.sections[0].text);
