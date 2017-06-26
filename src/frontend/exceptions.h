@@ -112,7 +112,7 @@ namespace Exceptions
             name##_t ret; \
             auto fields = ret.impl_get_field_refs__(); \
             std::reference_wrapper<std::string> params[] {INTERNAL_EXCEPTION_FOR_EACH_b##field_c}; \
-            for (int i = 0; i < field_c; i++) fields[i] = params[i].get(); \
+            for (int i = 0; i < field_c; i++) fields[i].get() = params[i].get(); \
             ret.update_description(); \
             throw ret; \
         }
@@ -133,7 +133,7 @@ namespace Exceptions
     {
         NEW_EXCEPTION(RenderArrayOverflow, "Render array overflow.", 1, queue_length)
         NEW_EXCEPTION(BadCubeMapImage, "Attempt to use incorrectly sized image as a cubemap side.", 1, size)
-        NEW_EXCEPTION(CantGenFontAtlas, "Not enough space in a font atlas to store all requested glyphs.", 3, font, progress, message)
+        NEW_EXCEPTION(CantGenFontAtlas, "Unable to generate a font atlas.", 3, font, progress, message)
         NEW_EXCEPTION(ShaderCompilationError, "Shader compilation error.", 5, shader_name, vertex_shader_status, fragment_shader_status, vertex_shader_log, fragment_shader_log)
         NEW_EXCEPTION(ShaderLinkingError, "Shader linking error.", 2, shader_name, log)
     }
