@@ -6,7 +6,7 @@
 #include <map>
 
 using namespace Backend;
-template <auto X> void func() {}
+
 City::City(Trade trade): trade(trade)
 {
     this->trade = trade;
