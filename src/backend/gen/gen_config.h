@@ -20,6 +20,7 @@ namespace Backend
         ~ConfigFile();
 
         rapidxml::xml_document<> *GetXMLDocument();
+        rapidxml::xml_node<> *GetRootNode();
 
         static ConfigFile *Instance()
         {
