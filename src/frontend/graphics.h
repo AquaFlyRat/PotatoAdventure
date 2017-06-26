@@ -1646,24 +1646,13 @@ namespace Graphics
             return 1;
         }
 
-        class AtlasFlags
-        {
-          public:
-            enum Enum
-            {
-                outline       = 0b01,
-                use_line_skip = 0b10,
-            };
-
-            friend Enum operator|(Enum a, Enum b){return Enum(a | b);}
-        };
-
         void MakeAtlas(ImageData &img, FontData &fontdata, ivec2 offset, ivec2 size, Utils::ArrayView<uint16_t> glyphs, bool outline = 0, Quality quality = fancy, u8vec4 color = {255,255,255,255})
         {
-            fontdata.SetFont(this);
+            "NOT FINISHED";
+            //fontdata.SetFont(this);
 
-            std::vector<uint16_t> glyphs{glyphs.begin(), glyphs.end()};
-            std::sort(glyphs.begin(), glyphs.end(), [](uint16_t a, uint16_t b){return a > b;});
+            std::vector<uint16_t> sorted_glyphs{glyphs.begin(), glyphs.end()};
+            std::sort(sorted_glyphs.begin(), sorted_glyphs.end(), [](uint16_t a, uint16_t b){return a > b;});
 
             if (outline)
             {
@@ -1680,7 +1669,7 @@ namespace Graphics
 
             int glyphs_processed = -1; // Sic! Note the -1 instead of 0 because we increment at the beginning of the loop.
 
-            for (uint16_t it : glyphs)
+            for (uint16_t it : sorted_glyphs)
             {
                 glyphs_processed++;
                 if (!GlyphExists(it))
@@ -1715,7 +1704,7 @@ namespace Graphics
                         img.At(pos + ivec2(glyph_size.x-1, i)) = {0,0,0,0};
                 }
 
-                pos.y += glyph_size.y
+                pos.y += glyph_size.y;
             }
         }
 
