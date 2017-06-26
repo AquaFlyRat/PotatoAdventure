@@ -842,11 +842,11 @@ namespace Graphics
         {
             return size.product() * sizeof (u8vec4);
         }
-        u8vec4 &At(uvec2 pos)
+        u8vec4 &At(ivec2 pos)
         {
             return data[size.x * pos.y + pos.x];
         }
-        u8vec4 At(uvec2 pos) const
+        u8vec4 At(ivec2 pos) const
         {
             return data[size.x * pos.y + pos.x];
         }
@@ -868,7 +868,7 @@ namespace Graphics
         {
             size = {0,0};
         }
-        ImageData(uvec2 new_size)
+        ImageData(ivec2 new_size)
         {
             size = new_size;
             data.resize(size.product());
@@ -1159,100 +1159,185 @@ namespace Graphics
 
     class FontData
     {
-        friend class Font;
+      public:
+        using kerning_func_t = std::function<int (uint16_t, uint16_t)>;
 
-        struct Glyph
+        struct GlyphData
         {
-            bool exists;
-            ivec2 pos, size;
-            ivec2 offset;
+            ivec2 pos, size, offset;
             int advance;
         };
 
-        static constexpr int total_glyph_count = 0x10000; // This must be equal to the range of uint16_t.
-        static constexpr int sub_buffer_count = 1024;
-        static constexpr int sub_buffer_size = total_glyph_count / sub_buffer_count;
-
-        std::vector<std::vector<Glyph>> glyph_map;
-        int height, ascent, descent, line_skip;
-        Font *font_ptr;
-
-        void Alloc(Font *font, int he, int asc, int lskip)
+      private:
+        template <typename T, unsigned int SubArraySize> class Catalog
         {
-            glyph_map.resize(sub_buffer_count);
-            font_ptr = font;
-            height = he;
-            ascent = asc;
-            descent = he - asc;
-            line_skip = lskip;
-        }
+          public:
+            using value_type = T;
+            using size_type = int;
 
+          private:
+            struct Element
+            {
+                bool exists = 0;
+                T object;
+            };
+
+            struct SubArray
+            {
+                int size = 0;
+                std::vector<Element> data;
+            };
+
+            std::vector<SubArray> data;
+
+          public:
+            constexpr Catalog() {}
+            Catalog(size_type full_size) : data((full_size + SubArraySize - 1) / SubArraySize) {}
+
+            void alloc(size_type full_size)
+            {
+                free();
+                data.resize((full_size + SubArraySize - 1) / SubArraySize);
+            }
+            void free()
+            {
+                data.clear();
+            }
+            void free_all()
+            {
+                for (auto it : data)
+                    it.data.clear();
+            }
+
+            [[nodiscard]] bool exists(size_type index) const
+            {
+                const auto &ref = data[index / SubArraySize];
+                if (ref.size == 0)
+                    return 0;
+                return ref.data[index % SubArraySize].exists;
+            }
+
+            T &add(size_type index)
+            {
+                auto &ref = data[index / SubArraySize];
+                if (ref.size == 0)
+                    ref.data.resize(SubArraySize);
+                auto &element_ref = ref.data[index % SubArraySize];
+                if (!element_ref.exists)
+                {
+                    ref.size++;
+                    element_ref.exists = 1;
+                }
+                return element_ref.object;
+            }
+
+            void remove(size_type index)
+            {
+                auto ref = data[index / SubArraySize];
+                if (ref.size == 0)
+                    return;
+                auto element_ref = ref.data[index % SubArraySize];
+                if (element_ref.exists)
+                {
+                    ref.size--;
+                    element_ref.exists = 0;
+                    if (ref.size == 0)
+                        ref.data.clear();
+                }
+            }
+
+            template <typename I> [[nodiscard]]       T &operator[](I index)       {return data[index / SubArraySize].data[index % SubArraySize].object;}
+            template <typename I> [[nodiscard]] const T &operator[](I index) const {return data[index / SubArraySize].data[index % SubArraySize].object;}
+        };
+
+        Catalog<GlyphData, 256> glyphs{0x10000};
+
+        kerning_func_t kerning_func;
+
+        int height, ascent, line_skip;
 
       public:
+
         FontData() {}
 
-        FontData(ArrayView<uint16_t> enc, ivec2 src, ivec2 glyph_sz, int row_len, int asc, int adv, int lskip) // Computes font data for monospaced font placed directly on the texture.
+        // Calls both `SetMetrics()` and `SetKerning()`.
+        FontData(int font_height, int font_ascent, int font_line_skip = 0, kerning_func_t func = [](uint16_t, uint16_t){return 0;})
         {
-            glyph_map.resize(sub_buffer_count);
-            font_ptr = 0;
-            height = glyph_sz.y;
-            ascent = asc;
-            descent = height - ascent;
-            line_skip = lskip;
-
-            for (std::size_t i = 0; i < enc.size(); i++)
-            {
-                AddGlyph(enc[i], {src.x + int(i) % row_len * glyph_sz.x, src.y + int(i) / row_len * glyph_sz.y}, glyph_sz, {0, -asc}, adv);
-            }
+            SetMetrics(font_height, font_ascent, font_line_skip);
+            SetKerning((kerning_func_t &&)func);
         }
 
-        bool GlyphExists(uint16_t glyph) const
+        // Calls `SetFont()`.
+        FontData(const Font *font, bool use_line_skip)
         {
-            if (glyph_map[glyph / sub_buffer_size].size() == 0)
-                return 0;
-            return glyph_map[glyph / sub_buffer_size][glyph % sub_buffer_size].exists;
+            SetFont(font, use_line_skip);
         }
-        ivec2 Pos(uint16_t glyph) const
+
+        // Calls both `SetMetrics()` and `SetKerning()`.
+        // Font pointer is used once to get global metrics. After that it's only used to obtain kerning information when requested. Everything else is cached.
+        // If `use_line_skip` == 0, then height will be used instead of actual line skip.
+        void SetFont(const Font *font, bool use_line_skip); // The implementation is placed into the .cpp to dodge the circular dependency.
+
+        // If `font_line_skip` == 0, then the height is used instead of it.
+        void SetMetrics(int font_height, int font_ascent, int font_line_skip = 0)
         {
-            if (glyph_map[glyph / sub_buffer_size].size() == 0)
-                return {0,0};
-            return glyph_map[glyph / sub_buffer_size][glyph % sub_buffer_size].pos;
+            height = font_height;
+            ascent = font_ascent;
+            line_skip = (font_line_skip ? font_line_skip : font_height);
         }
-        ivec2 Size(uint16_t glyph) const
+
+        void SetKerning(kerning_func_t func)
         {
-            if (glyph_map[glyph / sub_buffer_size].size() == 0)
-                return {0,0};
-            return glyph_map[glyph / sub_buffer_size][glyph % sub_buffer_size].size;
+            kerning_func = (kerning_func_t &&)func;
         }
-        ivec2 Offset(uint16_t glyph) const
+        void ResetKerning()
         {
-            if (glyph_map[glyph / sub_buffer_size].size() == 0)
-                return {0,0};
-            return glyph_map[glyph / sub_buffer_size][glyph % sub_buffer_size].offset;
+            kerning_func = [](uint16_t, uint16_t){return 0;};
         }
-        int Advance(uint16_t glyph) const // Horisontal offset to the next glyph.
-        {
-            if (glyph_map[glyph / sub_buffer_size].size() == 0)
-                return 0;
-            return glyph_map[glyph / sub_buffer_size][glyph % sub_buffer_size].advance;
-        }
-        int Kerning(uint16_t a, uint16_t b) const; // This function relies on the original Font object which created the current instance. It must be alive and opened.
-        int Height() const {return height;}
-        int Ascent() const {return ascent;}
-        int Descent() const {return descent;}
-        int LineSkip() const {return line_skip;} // This is an Y offset between lines. Height of the font is already added to it. Using this is not mandratory.
 
 
-        void AddGlyph(uint16_t glyph, ivec2 pos, ivec2 size, ivec2 offset, int advance)
+        void AddGlyph(uint16_t glyph, const GlyphData &data)
         {
-            int sub_buffer = glyph / sub_buffer_size;
-            if (!glyph_map[sub_buffer].size())
-            {
-                glyph_map[sub_buffer].resize(sub_buffer_size);
-                for (int i = 0; i < sub_buffer_size; i++)
-                    glyph_map[sub_buffer][i] = Glyph{};
-            }
-            glyph_map[sub_buffer][glyph % sub_buffer_size] = {1, pos, size, offset, advance};
+            glyphs.add(glyph) = data;
+        }
+        void RemoveGlyph(uint16_t glyph)
+        {
+            glyphs.remove(glyph);
+        }
+        void Clear()
+        {
+            glyphs.free_all();
+        }
+
+        int Height() const
+        {
+            return height;
+        }
+        int Ascent() const
+        {
+            return ascent;
+        }
+        int Descent() const
+        {
+            return height - ascent;
+        }
+        int LineSkip() const
+        {
+            return line_skip;
+        }
+        bool GlyphExists(uint16_t glyph)
+        {
+            return glyphs.exists(glyph);
+        }
+
+        const GlyphData &Glyph(uint16_t glyph)
+        {
+            return glyphs[glyph];
+        }
+
+        int Kerning(uint16_t a, uint16_t b)
+        {
+            return kerning_func(a, b);
         }
     };
 
@@ -1561,6 +1646,79 @@ namespace Graphics
             return 1;
         }
 
+        class AtlasFlags
+        {
+          public:
+            enum Enum
+            {
+                outline       = 0b01,
+                use_line_skip = 0b10,
+            };
+
+            friend Enum operator|(Enum a, Enum b){return Enum(a | b);}
+        };
+
+        void MakeAtlas(ImageData &img, FontData &fontdata, ivec2 offset, ivec2 size, Utils::ArrayView<uint16_t> glyphs, bool outline = 0, Quality quality = fancy, u8vec4 color = {255,255,255,255})
+        {
+            fontdata.SetFont(this);
+
+            std::vector<uint16_t> glyphs{glyphs.begin(), glyphs.end()};
+            std::sort(glyphs.begin(), glyphs.end(), [](uint16_t a, uint16_t b){return a > b;});
+
+            if (outline)
+            {
+                for (int i = 0; i < size.x; i++)
+                    img.At({i, offset.y}) = {0,0,0,0};
+                for (int i = 1; i < size.x; i++) // Sic! Note the 1 instead of 0.
+                    img.At({offset.x, i}) = {0,0,0,0};
+                offset++;
+                size--;
+            }
+
+            ivec2 pos(0,0);
+            int column_w = 0;
+
+            int glyphs_processed = -1; // Sic! Note the -1 instead of 0 because we increment at the beginning of the loop.
+
+            for (uint16_t it : glyphs)
+            {
+                glyphs_processed++;
+                if (!GlyphExists(it))
+                    continue;
+                ivec2 glyph_size = GlyphSize(it) + outline;
+                if (glyph_size.y > size.y - pos.y)
+                {
+                    if (glyph_size.y <= size.y)
+                    {
+                        pos.x += column_w;
+                        pos.y = 0;
+                        column_w = 0;
+                    }
+                    else
+                        Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("The height of the glyph 0x", std::hex, it, " is larger than the height of the atlas."));
+                }
+                if (glyph_size.x > size.x - pos.x)
+                    Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("Not enough space."));
+
+                if (!RenderGlyph(img, offset + pos, it, quality, color))
+                    Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("Can't render the glyph 0x", std::hex, it, '.'));
+                fontdata.AddGlyph(it, {offset + pos, GlyphSize(it), GlyphOffset(it), GlyphAdvance(it)});
+
+                if (glyph_size.x > column_w)
+                    column_w = glyph_size.x;
+
+                if (outline)
+                {
+                    for (int i = 0; i < glyph_size.x; i++)
+                        img.At(pos + ivec2(i, glyph_size.y-1)) = {0,0,0,0};
+                    for (int i = 1; i < glyph_size.y; i++) // Sic! Note the 1 instead of 0.
+                        img.At(pos + ivec2(glyph_size.x-1, i)) = {0,0,0,0};
+                }
+
+                pos.y += glyph_size.y
+            }
+        }
+
         /*
         // Uses UTF-16 for glyphs.
         void RenderGlyphs(FontData &font_data, ImageData &img, ivec2 dst, ivec2 dstsz, ArrayView<uint16_t> glyphs, bool outline = 0, Quality quality = fancy, u8vec4 color = {255,255,255,255})
@@ -1679,136 +1837,6 @@ namespace Graphics
             RenderGlyphs(font_data, img, dst, dstsz, {arr.data(), len}, outline, quality, color);
         }
         */
-    };
-
-    class GlyphList
-    {
-      public:
-        using kerning_func_t = std::function<int (uint16_t, uint16_t)>;
-
-      private:
-        template <typename T, unsigned int SubArraySize> class Catalog
-        {
-          public:
-            using value_type = T;
-            using size_type = int;
-
-          private:
-            struct Element
-            {
-                bool exists = 0;
-                T object;
-            };
-
-            struct SubArray
-            {
-                int size = 0;
-                Element data[SubArraySize];
-            };
-
-            std::vector<SubArray> data;
-
-          public:
-            constexpr Catalog() {}
-            Catalog(size_type full_size) : data((full_size + SubArraySize - 1) / SubArraySize) {}
-
-            void alloc(size_type full_size)
-            {
-                free();
-                data.resize((full_size + SubArraySize - 1) / SubArraySize);
-            }
-            void free()
-            {
-                data.clear();
-            }
-
-            [[nodiscard]] bool exists(size_type index) const
-            {
-                const auto ref = data[index / SubArraySize];
-                if (ref.size == 0)
-                    return 0;
-                return ref.data[index % SubArraySize].exists;
-            }
-
-            T &add(size_type index)
-            {
-                auto ref = data[index / SubArraySize];
-                if (ref.size == 0)
-                    ref.data.resize(SubArraySize);
-                auto element_ref = ref.data[index % SubArraySize];
-                if (!element_ref.exists)
-                {
-                    ref.size++;
-                    element_ref.exists = 1;
-                }
-                return element_ref.object;
-            }
-
-            void remove(size_type index)
-            {
-                auto ref = data[index / SubArraySize];
-                if (ref.size == 0)
-                    return;
-                auto element_ref = ref.data[index % SubArraySize];
-                if (element_ref.exists)
-                {
-                    ref.size--;
-                    element_ref.exists = 0;
-                    if (ref.size == 0)
-                        ref.data.clear();
-                }
-            }
-
-            template <typename I> [[nodiscard]]       T &operator[](I index)       {return data[index / SubArraySize].data[index % SubArraySize].object;}
-            template <typename I> [[nodiscard]] const T &operator[](I index) const {return data[index / SubArraySize].data[index % SubArraySize].object;}
-        };
-
-        struct Glyph
-        {
-            ivec2 pos, size, offset;
-            int advance;
-        };
-
-        Catalog<Glyph, 256> glyphs{0x10000};
-
-        kerning_func_t kerning_func;
-
-      public:
-
-        GlyphList()
-        {
-            SetKerningFunction();
-        }
-
-        GlyphList(kerning_func_t func)
-        {
-            SetKerningFunction((kerning_func_t &&)func);
-        }
-
-        // Font pointer is used only to obtain kerning information when requested. Everything else is cached.
-        GlyphList(const Font *font)
-        {
-            SetFont(font);
-        }
-
-        void SetFont(const Font *font)
-        {
-            SetKerningFunction([font](uint16_t a, uint16_t b){return font->GlyphKerning(a,b);});
-        }
-        void SetKerningFunction(kerning_func_t func = [](uint16_t, uint16_t){return 0;})
-        {
-            kerning_func = (kerning_func_t &&)func;
-        }
-
-        void AddGlyph()
-        {
-            "Write me!";
-        }
-
-        void RemoveGlyph()
-        {
-
-        }
     };
 
 

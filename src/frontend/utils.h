@@ -111,11 +111,11 @@ namespace Utils
                 (*this)->~T();
         }
 
-        operator       T *()       {assert(alive); return (      T *)&data;}
-        operator const T *() const {assert(alive); return (const T *)&data;}
+        operator       T *()       {Assert("Deferencing Utils::Object which is not alive.", alive); return (      T *)&data;}
+        operator const T *() const {Assert("Deferencing Utils::Object which is not alive.", alive); return (const T *)&data;}
 
-              T *operator->()       {assert(alive); return (      T *)&data;}
-        const T *operator->() const {assert(alive); return (const T *)&data;}
+              T *operator->()       {Assert("Deferencing Utils::Object which is not alive.", alive); return (      T *)&data;}
+        const T *operator->() const {Assert("Deferencing Utils::Object which is not alive.", alive); return (const T *)&data;}
 
         template <typename ...P> void create(P &&... p)
         {

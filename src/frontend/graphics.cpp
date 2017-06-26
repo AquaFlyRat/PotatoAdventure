@@ -448,13 +448,10 @@ namespace Graphics
     }
 
 
-    int FontData::Kerning(uint16_t a, uint16_t b) const // This function relies on the original Font object which created the current instance.
+    void FontData::SetFont(const Font *font, bool use_line_skip) // The implementation is placed into the .cpp to dodge the circular dependency.
     {
-        // This was moved into .cpp to avoid a circular dependency.
-        if (font_ptr)
-            return font_ptr->GlyphKerning(a, b);
-        else
-            return 0;
+        SetMetrics(font->Height(), font->Ascent(), use_line_skip ? font->LineSkip() : font->Height());
+        SetKerning([font](uint16_t a, uint16_t b){return font->GlyphKerning(a,b);});
     }
 
 
