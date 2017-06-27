@@ -243,6 +243,18 @@ namespace Utils
         uint32_t Noise32(uint32_t in);
     }
 
+    template <typename T, typename Tag> class Flag
+    {
+      public:
+        T value;
+
+        [[nodiscard]] constexpr Flag operator|(Flag other) const {return {value | other.value};}
+        [[nodiscard]] constexpr Flag operator&(Flag other) const {return {value & other.value};}
+        constexpr Flag &operator|=(Flag other) {value |= other.value; return *this;}
+        constexpr Flag &operator&=(Flag other) {value &= other.value; return *this;}
+        [[nodiscard]] constexpr operator T() const {return value;}
+    };
+
     class TickStabilizer
     {
         uint64_t tick_len;

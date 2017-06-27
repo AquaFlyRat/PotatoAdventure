@@ -1348,7 +1348,7 @@ namespace Graphics
         std::vector<char> stream_data;
 
       public:
-        void Open(Utils::BinaryInput input, int ptsize, int index = 0) // Warning: The file will be used while the font object is alive and opened.
+        void Open(Utils::BinaryInput input, int ptsize, int index = 0)
         {
             Close();
             auto file_size = input.Size();
@@ -1381,8 +1381,6 @@ namespace Graphics
         {
             Open((Utils::BinaryInput &&) input, ptsize, index);
         }
-
-
 
         Font(const Font &) = delete;
         Font &operator=(const Font &) = delete;
@@ -1646,20 +1644,24 @@ namespace Graphics
             return 1;
         }
 
-        void MakeAtlas(ImageData &img, FontData &fontdata, ivec2 offset, ivec2 size, Utils::ArrayView<uint16_t> glyphs, bool outline = 0, Quality quality = fancy, u8vec4 color = {255,255,255,255})
+        struct AtlasFlags
         {
-            "NOT FINISHED";
-            //fontdata.SetFont(this);
+            using type = Utils::Flag<unsigned, AtlasFlags>;
+            static constexpr type outline       = {0b01};
+            static constexpr type use_line_skip = {0b10};
+        };
+
+        void Export(ImageData &img, FontData &fontdata, ivec2 offset, ivec2 size, Utils::ArrayView<uint16_t> glyphs, Quality quality = fancy, AtlasFlags::type flags = {}, u8vec4 color = {255,255,255,255})
+        {
+            bool outline = flags & AtlasFlags::outline;
+
+            fontdata.SetFont(this, flags & AtlasFlags::use_line_skip);
 
             std::vector<uint16_t> sorted_glyphs{glyphs.begin(), glyphs.end()};
-            std::sort(sorted_glyphs.begin(), sorted_glyphs.end(), [](uint16_t a, uint16_t b){return a > b;});
+            std::sort(sorted_glyphs.begin(), sorted_glyphs.end(), [this](uint16_t a, uint16_t b){return GlyphSize(a).x > GlyphSize(b).x;});
 
             if (outline)
             {
-                for (int i = 0; i < size.x; i++)
-                    img.At({i, offset.y}) = {0,0,0,0};
-                for (int i = 1; i < size.x; i++) // Sic! Note the 1 instead of 0.
-                    img.At({offset.x, i}) = {0,0,0,0};
                 offset++;
                 size--;
             }
@@ -1674,37 +1676,54 @@ namespace Graphics
                 glyphs_processed++;
                 if (!GlyphExists(it))
                     continue;
-                ivec2 glyph_size = GlyphSize(it) + outline;
-                if (glyph_size.y > size.y - pos.y)
-                {
-                    if (glyph_size.y <= size.y)
-                    {
-                        pos.x += column_w;
-                        pos.y = 0;
-                        column_w = 0;
-                    }
-                    else
-                        Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("The height of the glyph 0x", std::hex, it, " is larger than the height of the atlas."));
-                }
-                if (glyph_size.x > size.x - pos.x)
-                    Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("Not enough space."));
+                ivec2 glyph_size = GlyphSize(it);
+                bool has_sprite = bool(glyph_size);
+                glyph_size += outline;
 
-                if (!RenderGlyph(img, offset + pos, it, quality, color))
-                    Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("Can't render the glyph 0x", std::hex, it, '.'));
+                if (has_sprite)
+                {
+                    if (glyph_size.y > size.y - pos.y)
+                    {
+                        if (glyph_size.y <= size.y)
+                        {
+                            pos.x += column_w;
+                            pos.y = 0;
+                            column_w = 0;
+                        }
+                        else
+                            Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("The height of the glyph 0x", std::hex, it, " is larger than the height of the atlas."));
+                    }
+                    if (glyph_size.x > size.x - pos.x)
+                        Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("Not enough space."));
+
+                    if (GlyphSize(it))
+                    if (!RenderGlyph(img, offset + pos, it, quality, color))
+                        continue;
+                }
+
                 fontdata.AddGlyph(it, {offset + pos, GlyphSize(it), GlyphOffset(it), GlyphAdvance(it)});
 
-                if (glyph_size.x > column_w)
-                    column_w = glyph_size.x;
-
-                if (outline)
+                if (has_sprite)
                 {
-                    for (int i = 0; i < glyph_size.x; i++)
-                        img.At(pos + ivec2(i, glyph_size.y-1)) = {0,0,0,0};
-                    for (int i = 1; i < glyph_size.y; i++) // Sic! Note the 1 instead of 0.
-                        img.At(pos + ivec2(glyph_size.x-1, i)) = {0,0,0,0};
-                }
+                    if (glyph_size.x > column_w)
+                        column_w = glyph_size.x;
 
-                pos.y += glyph_size.y;
+                    if (outline)
+                    {
+                        for (int i = -1; i < glyph_size.x; i++)
+                        {
+                            img.At(offset + pos + ivec2(i, glyph_size.y-1)) = {0,0,0,0};
+                            img.At(offset + pos + ivec2(i, -1)) = {0,0,0,0};
+                        }
+                        for (int i = 0; i < glyph_size.y-1; i++)
+                        {
+                            img.At(offset + pos + ivec2(glyph_size.x-1, i)) = {0,0,0,0};
+                            img.At(offset + pos + ivec2(-1, i)) = {0,0,0,0};
+                        }
+                    }
+
+                    pos.y += glyph_size.y;
+                }
             }
         }
 
