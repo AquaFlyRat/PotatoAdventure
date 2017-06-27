@@ -78,6 +78,9 @@
     <ClCompile Include="..\src\backend\gen\city.cpp">
       <Filter>Source Files\Backend\Gen</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\backend\gen\world_generator.cpp">
+      <Filter>Source Files\Backend\Gen</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\backend\gen\city_generator.cpp">
       <Filter>Source Files\Backend\Gen</Filter>
     </ClCompile>
