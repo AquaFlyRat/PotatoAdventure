@@ -25,6 +25,7 @@
     <ClCompile Include="..\src\backend\gen\city.cpp" />
     <ClCompile Include="..\src\backend\gen\city_generator.cpp" />
     <ClCompile Include="..\src\backend\gen\gen_config.cpp" />
+    <ClCompile Include="..\src\backend\gen\world.cpp" />
     <ClCompile Include="..\src\frontend\audio.cpp" />
     <ClCompile Include="..\src\frontend\graphics.cpp" />
     <ClCompile Include="..\src\frontend\input.cpp" />

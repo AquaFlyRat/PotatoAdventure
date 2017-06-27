@@ -87,6 +87,9 @@
     <ClCompile Include="..\src\backend\gen\gen_config.cpp">
       <Filter>Source Files\Backend\Gen</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\backend\gen\world.cpp">
+      <Filter>Source Files\Backend\Gen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\frontend\lib\al.h">
