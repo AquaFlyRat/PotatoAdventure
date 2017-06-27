@@ -35,6 +35,7 @@
     <ClCompile Include="..\src\frontend\system.cpp" />
     <ClCompile Include="..\src\frontend\utils.cpp" />
     <ClCompile Include="..\src\frontend\window.cpp" />
+    <ClCompile Include "..\src\backend\gen\world_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\backend\backend_utils.h" />
