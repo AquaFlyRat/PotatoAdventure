@@ -2,7 +2,7 @@ This project uses a modified version of [0engine](https://github.com/HolyBlackCa
 
 -----
 
-###0engine license:
+### 0engine license:
 
 Copyright (c) 2017 Egor Mikhailov
 
