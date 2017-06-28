@@ -1,3 +1,9 @@
+This project uses a modified version of [0engine](https://github.com/HolyBlackCat/0engine).
+
+-----
+
+###0engine license:
+
 Copyright (c) 2017 Egor Mikhailov
 
 This software is provided 'as-is', without any express or implied
