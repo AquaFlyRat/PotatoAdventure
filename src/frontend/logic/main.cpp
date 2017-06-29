@@ -75,7 +75,7 @@ void Main()
 
         renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 30.0));
         renderer->Sprite(ivec2(fmat2::rotate2D(Sys::TickCounter() % 200 / float(200) * f_pi * 2) /mul/ fvec2(0,64)) + screen_size / 2, {32,32}).tex({0,0}).center().angle(Sys::TickCounter() % 200 / float(200) * f_pi * -2);
-        renderer->Text(screen_size/2, main_font, "Hello, world!\n1234\n###").color({1,0.5,0.5});
+        renderer->Text(screen_size/2, main_font, "Hello, world!\n1234\n#\xcf\x97#").color({1,0.5,0.5});
     };
 
     while (1)

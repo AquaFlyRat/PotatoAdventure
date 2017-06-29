@@ -454,19 +454,17 @@ class Renderer2D
                 position.y += font->Ascent() * text_scale;
 
             uint16_t prev_ch = 0;
-            bool prev_ch_found = 0;
 
             for (auto it = text.begin(); it != text.end(); it++)
             {
                 if (!u8firstbyte(it))
                     continue;
                 uint16_t ch = u8decode(it);
-
-                bool found;
+                if (!font->GlyphExists(ch))
+                    ch = 0;
 
                 if (ch == '\n')
                 {
-                    found = 0;
                     position.x = initial_x;
                     if (text_alignment.x == 0)
                         position.x -= font->LineWidth(it+1) / 2 * text_scale;
@@ -477,19 +475,7 @@ class Renderer2D
                 }
                 else
                 {
-                    if (font->GlyphExists(ch))
-                    {
-                        found = 1;
-                    }
-                    else
-                    {
-                        found = 0;
-                        static constexpr const char *random_chars = "~!@#$%^&*-=_+?\\/<>";
-                        ch = random_chars[std::rand() % (sizeof random_chars - 1)];
-                    }
-
-                    if (found && prev_ch_found)
-                        position.x += font->Kerning(prev_ch, ch) * text_scale;
+                    position.x += font->Kerning(prev_ch, ch) * text_scale;
 
                     const auto &glyph_data = font->Glyph(ch);
 
@@ -499,7 +485,6 @@ class Renderer2D
                 }
 
                 prev_ch = ch;
-                prev_ch_found = found;
             }
         }
     };

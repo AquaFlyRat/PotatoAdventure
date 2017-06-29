@@ -1359,27 +1359,20 @@ namespace Graphics
             }
             return ret;
         }
-        int LineWidth(std::string::const_iterator iter, int unknown_char_len = 0) const
+        int LineWidth(std::string::const_iterator iter) const
         {
             int ret = 0;
             uint16_t prev = 0;
-            bool found_prev = 0;
             while (*iter && *iter != '\n')
             {
                 if (u8firstbyte(*iter))
                 {
                     uint16_t ch = u8decode(iter);
                     bool found = GlyphExists(ch);
-                    if (found)
-                    {
-                        ret += Glyph(ch).advance;
-                        if (found_prev)
-                            ret += Kerning(prev, ch);
-                    }
-                    else
-                        ret += unknown_char_len;
+                    if (!found)
+                        ch = 0;
+                    ret += Glyph(ch).advance + Kerning(prev, ch);
                     prev = ch;
-                    found_prev = found;
                 }
                 iter++;
             }
@@ -1650,7 +1643,20 @@ namespace Graphics
             SDL_Rect src_rect;
             src_rect.x = glyph_pos.x;
             src_rect.y = Ascent() - glyph_size.y;
+
             glyph_size -= glyph_pos;
+
+            // If X offset is negative.
+            if (src_rect.x < 0)
+                src_rect.x = 0;
+
+            // If Y offset is less than (negative) ascent.
+            if (src_rect.y < 0)
+            {
+                glyph_size.y += src_rect.y; // Sic! We use this for Y coordinate only because SDL2_ttf clips parts of the glyph which are above ascent line.
+                src_rect.y = 0;
+            }
+
             src_rect.w = glyph_size.x;
             src_rect.h = glyph_size.y;
 
