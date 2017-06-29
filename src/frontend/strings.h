@@ -66,79 +66,55 @@ namespace Strings
 
     inline namespace UTF8
     {
-        inline bool u8firstbyte(const char *ptr) // Check if a pointed byte is a first byte of a symbol.
+        constexpr uint16_t u8invalidchar = 0xffff;
+
+        [[nodiscard]] inline bool u8firstbyte(char ch) // Check if a pointed byte is a first byte of a symbol.
         {
-            return !(*ptr & 0x80) || (*ptr & 0xc0) == 0xc0;
+            return (ch & 0b1100'0000) != 0b1000'0000;
+        }
+        [[nodiscard]] inline bool u8firstbyte(std::string::const_iterator ch)
+        {
+            return u8firstbyte(*ch);
         }
 
-        inline std::size_t u8strlen(const char *ptr)
+        [[nodiscard]] inline std::size_t u8strlen(std::string_view str)
         {
             std::size_t ret = 0;
-            while (*ptr)
-            {
-                if (u8firstbyte(ptr))
+            for (char it : str)
+                if (u8firstbyte(it))
                     ret++;
-                ptr++;
-            }
             return ret;
         }
 
-        inline const char *u8next(const char *ptr)
+        [[nodiscard]] inline std::size_t u8charlen(char ch) // If `ch` is not a first byte of a sequence, returns 0.
         {
-            while (*ptr)
-            {
-                ptr++;
-                if (u8firstbyte(ptr))
-                    break;
-            }
-            return ptr;
+            if ((ch & 0b1000'0000) == 0)
+                return 1;
+            if (!u8firstbyte(ch))
+                return 0;
+            for (int i = 1; i < 8; i++)
+                if (((ch & (0xff00 >> (i+1))) ^ ((0xff00 >> i) & 0xff)) == 0)
+                    return i;
+            return 8;
+        }
+        [[nodiscard]] inline std::size_t u8charlen(std::string::const_iterator ch)
+        {
+            return u8charlen(*ch);
         }
 
-        constexpr uint16_t u8invalidchar = 0xffff;
-
-        inline uint16_t u8decode(const char *ptr, const char **next = 0) // 0xffff is returned if the value is out of range.
+        [[nodiscard]] inline uint16_t u8decode(std::string::const_iterator str) // Decodes the first character only. Returns `u8invalidchar` on failure.
         {
-            static constexpr uint8_t bits[5]{0b10000000,
-                                             0b11000000,
-                                             0b11100000,
-                                             0b11110000,
-                                             0b11111000};
-            static constexpr uint8_t inv_bits[5]{0b01111111,
-                                                 0b00111111,
-                                                 0b00011111,
-                                                 0b00001111,
-                                                 0b00000111};
-
-            if ((*ptr & bits[0]) == 0)
+            switch (u8charlen(*str))
             {
-                if (next) *next = ptr + 1;
-                return *ptr & inv_bits[0];
+              default:
+                return u8invalidchar;
+              case 1:
+                return *str;
+              case 2:
+                return (*str << 6) | (str[1] & 0b0011'1111);
+              case 3:
+                return (*str << 12) | ((str[1] & 0b0011'1111) << 6) | (str[2] & 0b0011'1111);
             }
-
-            uint16_t ret;
-            for (int i = 1; i < 4; i++)
-            {
-                if ((*ptr & bits[i+1]) == bits[i])
-                {
-                    ret = *ptr & inv_bits[i+1];
-                    for (int j = 0; j < i; j++)
-                    {
-                        ptr++;
-                        if (!*ptr)
-                        {
-                            if (next) *next = ptr;
-                            return u8invalidchar;
-                        }
-                        ret = (ret << 6) | (*ptr & inv_bits[1]);
-                    }
-                    if (next) *next = ptr + 1;
-                    return ret;
-                }
-            }
-
-            if (next) *next = u8next(ptr);
-
-            return u8invalidchar;
         }
     }
 }

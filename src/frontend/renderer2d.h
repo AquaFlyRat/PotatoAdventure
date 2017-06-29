@@ -1,6 +1,8 @@
 #ifndef RENDERER2D_H_INCLUDED
 #define RENDERER2D_H_INCLUDED
 
+#include <cstdlib>
+
 #include "graphics.h"
 #include "math.h"
 #include "utils.h"
@@ -96,10 +98,12 @@ class Renderer2D
     }
 
   private:
-    class DrawCommand
+    class UnfinishedSprite
     {
-        DrawCommand(const DrawCommand &) = default;
-        DrawCommand &operator=(const DrawCommand &) = default;
+        UnfinishedSprite(const UnfinishedSprite &) = default;
+        UnfinishedSprite &operator=(const UnfinishedSprite &) = default;
+
+        using rvalue = UnfinishedSprite &&;
 
         Renderer2D *renderer;
 
@@ -127,21 +131,19 @@ class Renderer2D
 
         bool sprite_flip_x = 0, sprite_flip_y = 0;
 
-        using rvalue = DrawCommand &&;
-
       public:
-        DrawCommand(DrawCommand &&o) : DrawCommand(o)
+        UnfinishedSprite(UnfinishedSprite &&o) : UnfinishedSprite(o)
         {
             o.renderer = 0;
         }
-        DrawCommand &operator=(DrawCommand &&o)
+        UnfinishedSprite &operator=(UnfinishedSprite &&o)
         {
             *this = o;
             o.renderer = 0;
             return *this;
         }
 
-        DrawCommand(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
+        UnfinishedSprite(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
 
         rvalue tex(fvec2 pos, fvec2 sz)
         {
@@ -271,13 +273,15 @@ class Renderer2D
             return (rvalue)*this;
         }
 
-        ~DrawCommand()
+        ~UnfinishedSprite()
         {
             if (!renderer)
                 return;
 
             Assert("2D renderer: Attempt to render a sprite with no texture nor color specified.", have_texture || have_color);
             Assert("2D renderer: Attempt to render a sprite with absolute corner coodinates with a center specified.", absolute_pos + have_center < 2);
+            Assert("2D renderer: Attempt to render a rotated sprite with no center specified.", (sprite_angle != 0) <= have_center);
+            Assert("2D renderer: Attempt to render a sprite with both texture and color specified, but without a mixing factor.", (have_texture && have_color) <= have_tex_color_fac);
 
             if (absolute_pos)
             {
@@ -348,8 +352,6 @@ class Renderer2D
 
             if (sprite_angle != 0)
             {
-                Assert("2D renderer: Attempt to render a rotated sprite with no center specified.", have_center);
-
                 fmat2 m = fmat2::rotate2D(sprite_angle);
                 a = m /mul/ a;
                 b = m /mul/ b;
@@ -370,10 +372,147 @@ class Renderer2D
         }
     };
 
+    class UnfinishedText
+    {
+        UnfinishedText(const UnfinishedText &) = default;
+        UnfinishedText &operator=(const UnfinishedText &) = default;
+
+        using rvalue = UnfinishedText &&;
+
+        Renderer2D *renderer;
+
+        ivec2 position;
+        const Graphics::FontData *font;
+        std::string text;
+
+        ivec2 text_alignment = {0,0};
+        fvec3 text_color = {1,1,1};
+        float text_alpha = 1;
+        float text_opacity = 1;
+        float text_scale = 1;
+
+
+      public:
+        UnfinishedText(UnfinishedText &&o) : UnfinishedText(o)
+        {
+            o.renderer = 0;
+        }
+        UnfinishedText &operator=(UnfinishedText &&o)
+        {
+            *this = o;
+            o.renderer = 0;
+            return *this;
+        }
+
+        UnfinishedText(Renderer2D *r, fvec2 pos, const Graphics::FontData &font, std::string text) : renderer(r), position(pos), font(&font), text((std::string &&)text) {}
+
+        rvalue color(fvec3 c)
+        {
+            text_color = c;
+            return (rvalue)*this;
+        }
+        rvalue alpha(float a)
+        {
+            text_alpha = a;
+            return (rvalue)*this;
+        }
+        rvalue opacity(float a)
+        {
+            text_opacity = a;
+            return (rvalue)*this;
+        }
+        rvalue align_h(int a)
+        {
+            text_alignment.x = a;
+            return (rvalue)*this;
+        }
+        rvalue align_v(int a)
+        {
+            text_alignment.y = a;
+            return (rvalue)*this;
+        }
+        rvalue scale(float s)
+        {
+            text_scale = s;
+            return (rvalue)*this;
+        }
+
+        ~UnfinishedText()
+        {
+            int initial_x = position.x;
+
+            if (text_alignment.x == 0)
+                position.x -= font->LineWidth(text.begin()) / 2 * text_scale;
+            else if (text_alignment.x > 0)
+                position.x -= font->LineWidth(text.begin()) * text_scale;
+
+            if (text_alignment.y == 0)
+                position.y -= font->TextHeight(text.begin()) / 2 * text_scale;
+            else if (text_alignment.y > 0)
+                position.y -= (font->TextHeight(text.begin()) + font->Descent()) * text_scale;
+            else
+                position.y += font->Ascent() * text_scale;
+
+            uint16_t prev_ch = 0;
+            bool prev_ch_found = 0;
+
+            for (auto it = text.begin(); it != text.end(); it++)
+            {
+                if (!u8firstbyte(it))
+                    continue;
+                uint16_t ch = u8decode(it);
+
+                bool found;
+
+                if (ch == '\n')
+                {
+                    found = 0;
+                    position.x = initial_x;
+                    if (text_alignment.x == 0)
+                        position.x -= font->LineWidth(it+1) / 2 * text_scale;
+                    else if (text_alignment.x > 0)
+                        position.x -= font->LineWidth(it+1) * text_scale;
+                    position.y += font->LineSkip() * text_scale;
+                    continue;
+                }
+                else
+                {
+                    if (font->GlyphExists(ch))
+                    {
+                        found = 1;
+                    }
+                    else
+                    {
+                        found = 0;
+                        static constexpr const char *random_chars = "~!@#$%^&*-=_+?\\/<>";
+                        ch = random_chars[std::rand() % (sizeof random_chars - 1)];
+                    }
+
+                    if (found && prev_ch_found)
+                        position.x += font->Kerning(prev_ch, ch) * text_scale;
+
+                    const auto &glyph_data = font->Glyph(ch);
+
+                    renderer->Sprite(position + glyph_data.offset * text_scale, glyph_data.size * text_scale).tex(glyph_data.pos, glyph_data.size).color(text_color).mix(0).alpha(text_alpha).opacity(text_opacity);
+
+                    position.x += glyph_data.advance * text_scale;
+                }
+
+                prev_ch = ch;
+                prev_ch_found = found;
+            }
+        }
+    };
+
   public:
-    DrawCommand Sprite(fvec2 pos, fvec2 size)
+    UnfinishedSprite Sprite(fvec2 pos, fvec2 size)
     {
         return {this, pos, size};
+    }
+
+    UnfinishedText Text(ivec2 pos, const Graphics::FontData &font, std::string text)
+    {
+        return {this, pos, font, text};
     }
 };
 

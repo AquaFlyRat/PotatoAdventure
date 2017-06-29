@@ -243,17 +243,24 @@ namespace Utils
         uint32_t Noise32(uint32_t in);
     }
 
-    template <typename T, typename Tag> class Flag
+    inline namespace SmartFlags
     {
-      public:
-        T value;
+        template <typename Tag, typename T = unsigned int> class Flag
+        {
+          public:
+            T value;
 
-        [[nodiscard]] constexpr Flag operator|(Flag other) const {return {value | other.value};}
-        [[nodiscard]] constexpr Flag operator&(Flag other) const {return {value & other.value};}
-        constexpr Flag &operator|=(Flag other) {value |= other.value; return *this;}
-        constexpr Flag &operator&=(Flag other) {value &= other.value; return *this;}
-        [[nodiscard]] constexpr operator T() const {return value;}
-    };
+            [[nodiscard]] constexpr operator T() const {return value;}
+        };
+
+        template <typename Tag, typename T> [[nodiscard]] constexpr Flag<T,Tag> operator|(Flag<T,Tag> a, Flag<T,Tag> b) {return {a.value | b.value};}
+        template <typename Tag, typename T> [[nodiscard]] constexpr Flag<T,Tag> operator&(Flag<T,Tag> a, Flag<T,Tag> b) {return {a.value & b.value};}
+        template <typename Tag, typename T> constexpr Flag<T,Tag> &operator|=(Flag<T,Tag> &a, Flag<T,Tag> b) {a.value |= b.value; return a;}
+        template <typename Tag, typename T> constexpr Flag<T,Tag> &operator&=(Flag<T,Tag> &a, Flag<T,Tag> b) {a.value &= b.value; return a;}
+        template <typename Tag, typename T> [[nodiscard]] constexpr Flag<T,Tag> operator*(Flag<T,Tag> a, bool b) {return {a.value * b};}
+        template <typename Tag, typename T> [[nodiscard]] constexpr Flag<T,Tag> operator*(bool a, Flag<T,Tag> b) {return {a * b.value};}
+        template <typename Tag, typename T> constexpr Flag<T,Tag> &operator*=(Flag<T,Tag> &a, Flag<T,Tag> b) {a.value *= b.value; return a;}
+    }
 
     class TickStabilizer
     {

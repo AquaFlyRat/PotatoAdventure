@@ -448,10 +448,12 @@ namespace Graphics
     }
 
 
-    void FontData::SetFont(const Font *font, bool use_line_skip) // The implementation is placed into the .cpp to dodge the circular dependency.
+    void FontData::Import(const Font *font, ImportFlags::type flags) // The implementation is placed into the .cpp to dodge the circular dependency with Font class.
     {
-        SetMetrics(font->Height(), font->Ascent(), use_line_skip ? font->LineSkip() : font->Height());
-        SetKerning([font](uint16_t a, uint16_t b){return font->GlyphKerning(a,b);});
+        if (flags & ImportFlags::metrics)
+            SetMetrics(font->Height(), font->Ascent(), flags & ImportFlags::use_line_skip ? font->LineSkip() : font->Height());
+        if (flags & ImportFlags::kerning)
+            SetKerning([font](uint16_t a, uint16_t b){return font->GlyphKerning(a,b);});
     }
 
 

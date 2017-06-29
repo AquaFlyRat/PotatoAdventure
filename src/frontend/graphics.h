@@ -1267,16 +1267,25 @@ namespace Graphics
             SetKerning((kerning_func_t &&)func);
         }
 
-        // Calls `SetFont()`.
-        FontData(const Font *font, bool use_line_skip)
+        struct ImportFlags
         {
-            SetFont(font, use_line_skip);
+            using type = Utils::Flag<ImportFlags>;
+            static constexpr type metrics       = {0b001};
+            static constexpr type use_line_skip = {0b010}; // If this flag is not set, then the height is used as line skip. Makes no sense without `metrics`.
+            static constexpr type kerning       = {0b100}; // Requires Font object to be constantly alive and opened.
+            static constexpr type default_flags = metrics | kerning;
+        };
+
+        // Calls `Import()`.
+        FontData(const Font *font, ImportFlags::type flags = ImportFlags::default_flags)
+        {
+            Import(font, flags);
         }
 
-        // Calls both `SetMetrics()` and `SetKerning()`.
-        // Font pointer is used once to get global metrics. After that it's only used to obtain kerning information when requested. Everything else is cached.
-        // If `use_line_skip` == 0, then height will be used instead of actual line skip.
-        void SetFont(const Font *font, bool use_line_skip); // The implementation is placed into the .cpp to dodge the circular dependency.
+
+        // Calls `SetMetrics()` and/or `SetKerning()` depending on flags.
+        // WARNING: If `kerning` flag is set, then the Font object must be alive and opened as long as you use the kerning function.
+        void Import(const Font *font, ImportFlags::type flags = ImportFlags::default_flags); // The implementation is placed into the .cpp to dodge the circular dependency with Font class.
 
         // If `font_line_skip` == 0, then the height is used instead of it.
         void SetMetrics(int font_height, int font_ascent, int font_line_skip = 0)
@@ -1294,7 +1303,6 @@ namespace Graphics
         {
             kerning_func = [](uint16_t, uint16_t){return 0;};
         }
-
 
         void AddGlyph(uint16_t glyph, const GlyphData &data)
         {
@@ -1325,19 +1333,57 @@ namespace Graphics
         {
             return line_skip;
         }
-        bool GlyphExists(uint16_t glyph)
+        bool GlyphExists(uint16_t glyph) const
         {
             return glyphs.exists(glyph);
         }
 
-        const GlyphData &Glyph(uint16_t glyph)
+        const GlyphData &Glyph(uint16_t glyph) const
         {
             return glyphs[glyph];
         }
 
-        int Kerning(uint16_t a, uint16_t b)
+        int Kerning(uint16_t a, uint16_t b) const
         {
             return kerning_func(a, b);
+        }
+
+        int TextHeight(std::string::const_iterator iter) const
+        {
+            int ret = 0;
+            while (*iter)
+            {
+                if (*iter == '\n')
+                    ret += line_skip;
+                iter++;
+            }
+            return ret;
+        }
+        int LineWidth(std::string::const_iterator iter, int unknown_char_len = 0) const
+        {
+            int ret = 0;
+            uint16_t prev = 0;
+            bool found_prev = 0;
+            while (*iter && *iter != '\n')
+            {
+                if (u8firstbyte(*iter))
+                {
+                    uint16_t ch = u8decode(iter);
+                    bool found = GlyphExists(ch);
+                    if (found)
+                    {
+                        ret += Glyph(ch).advance;
+                        if (found_prev)
+                            ret += Kerning(prev, ch);
+                    }
+                    else
+                        ret += unknown_char_len;
+                    prev = ch;
+                    found_prev = found;
+                }
+                iter++;
+            }
+            return ret;
         }
     };
 
@@ -1581,7 +1627,7 @@ namespace Graphics
         enum Quality {fast, fancy};
 
         // If `img` is clean, then it's resized to the glyph size and `dst` is ignored.
-        bool RenderGlyph(ImageData &img, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255}) // Returns 1 on success.
+        bool RenderGlyph(ImageData &img, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255}) const // Returns 1 on success.
         {
             if (!GlyphExists(glyph))
                 return 0;
@@ -1635,7 +1681,7 @@ namespace Graphics
             SDL_FreeSurface(glyph_surface);
             return 1;
         }
-        bool RenderGlyph(Texture &tex, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255}) // Returns 1 on success.
+        bool RenderGlyph(Texture &tex, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255}) const // Returns 1 on success.
         {
             ImageData img;
             if (!RenderGlyph(img, {0,0}, glyph, quality, color))
@@ -1644,18 +1690,22 @@ namespace Graphics
             return 1;
         }
 
-        struct AtlasFlags
+        struct ExportFlags
         {
-            using type = Utils::Flag<unsigned, AtlasFlags>;
-            static constexpr type outline       = {0b01};
-            static constexpr type use_line_skip = {0b10};
+            using type = Utils::Flag<ExportFlags>;
+            static constexpr type outline       = {0b001};
+            static constexpr type use_line_skip = {0b010};
+            static constexpr type use_kerning   = {0b100};
+            static constexpr type default_flags = outline | use_kerning;
         };
 
-        void Export(ImageData &img, FontData &fontdata, ivec2 offset, ivec2 size, Utils::ArrayView<uint16_t> glyphs, Quality quality = fancy, AtlasFlags::type flags = {}, u8vec4 color = {255,255,255,255})
+        void ExportGlyphs(ImageData &img, FontData &fontdata, ivec2 offset, ivec2 size, Utils::ArrayView<uint16_t> glyphs, Quality quality = fancy, ExportFlags::type flags = ExportFlags::default_flags , u8vec4 color = {255,255,255,255}) const
         {
-            bool outline = flags & AtlasFlags::outline;
+            bool outline = flags & ExportFlags::outline;
 
-            fontdata.SetFont(this, flags & AtlasFlags::use_line_skip);
+            fontdata.Import(this, FontData::ImportFlags::metrics |
+                                  bool(flags & ExportFlags::use_kerning)   * FontData::ImportFlags::kerning |
+                                  bool(flags & ExportFlags::use_line_skip) * FontData::ImportFlags::use_line_skip);
 
             std::vector<uint16_t> sorted_glyphs{glyphs.begin(), glyphs.end()};
             std::sort(sorted_glyphs.begin(), sorted_glyphs.end(), [this](uint16_t a, uint16_t b){return GlyphSize(a).x > GlyphSize(b).x;});
