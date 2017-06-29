@@ -1630,7 +1630,7 @@ namespace Graphics
         bool RenderGlyph(ImageData &img, ivec2 dst, uint16_t glyph, Quality quality = Quality::fancy, u8vec4 color = {255,255,255,255}) const // Returns 1 on success.
         {
             if (!GlyphExists(glyph))
-                return 0;
+                glyph = 0xffff;
 
             SDL_Surface *glyph_surface = (quality == fancy ? TTF_RenderGlyph_Blended : TTF_RenderGlyph_Solid)(handle, glyph, {color.r, color.g, color.b, color.a});
             if (!glyph_surface)
@@ -1724,7 +1724,7 @@ namespace Graphics
             for (uint16_t it : sorted_glyphs)
             {
                 glyphs_processed++;
-                if (!GlyphExists(it))
+                if (!GlyphExists(it) && it != 0)
                     continue;
                 ivec2 glyph_size = GlyphSize(it);
                 bool has_sprite = bool(glyph_size);
@@ -1746,7 +1746,6 @@ namespace Graphics
                     if (glyph_size.x > size.x - pos.x)
                         Exceptions::Graphics::CantGenFontAtlas(Name(), Str(glyphs_processed, '/', glyphs.size()), Str("Not enough space."));
 
-                    if (GlyphSize(it))
                     if (!RenderGlyph(img, offset + pos, it, quality, color))
                         continue;
                 }
