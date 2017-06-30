@@ -54,6 +54,7 @@ void Boot()
 
     renderer = new Renderer2D(screen_size);
     renderer->SetTexture(*main_texture);
+    renderer->SetDefaultFont(main_font);
     renderer->SetBlendingMode();
     renderer->UseMouseMapping(1);
     renderer->EnableShader();
@@ -74,8 +75,9 @@ void Main()
         Graphics::Clear();
 
         renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 30.0));
-        renderer->Sprite(ivec2(fmat2::rotate2D(Sys::TickCounter() % 200 / float(200) * f_pi * 2) /mul/ fvec2(0,64)) + screen_size / 2, {32,32}).tex({0,0}).center().angle(Sys::TickCounter() % 200 / float(200) * f_pi * -2);
-        renderer->Text(screen_size/2, main_font, "Hello, world!\n1234\n#\xcf\x97#").color({1,0.5,0.5});
+        float angle = Sys::TickCounter() % 200 / float(200) * f_pi * 2;
+        renderer->Sprite(ivec2(fmat2::rotate2D(angle) /mul/ fvec2(0,64)) + screen_size / 2, {32,32}).tex({0,0}).center().angle(-angle);
+        renderer->Text(screen_size/2, "Hello, world!\n1234\n#\xcf\x97#").color({1,1,1}).shadow({1,1}).shadow_color({0.5,0,0});
     };
 
     while (1)

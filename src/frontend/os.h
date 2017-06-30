@@ -17,59 +17,65 @@
 
 
 #if defined(E0INTERNAL_OS_WINDOWS)
-#define ForWindows(...) __VA_ARGS__
-#define ForMac(...)
-#define ForLinux(...)
-#define ForAndroid(...)
-#define OnWindows 1
-#define OnMac     0
-#define OnLinux   0
-#define OnAndroid 0
+#  define ForWindows(...) __VA_ARGS__
+#  define ForMac(...)
+#  define ForLinux(...)
+#  define ForAndroid(...)
+#  define OnWindows 1
+#  define OnMac     0
+#  define OnLinux   0
+#  define OnAndroid 0
 #elif defined(E0INTERNAL_OS_MAC)
-#define ForWindows(...)
-#define ForMac(...) __VA_ARGS__
-#define ForLinux(...)
-#define ForAndroid(...)
-#define OnWindows 0
-#define OnMac     1
-#define OnLinux   0
-#define OnAndroid 0
+#  define ForWindows(...)
+#  define ForMac(...) __VA_ARGS__
+#  define ForLinux(...)
+#  define ForAndroid(...)
+#  define OnWindows 0
+#  define OnMac     1
+#  define OnLinux   0
+#  define OnAndroid 0
 #elif defined(E0INTERNAL_OS_LINUX)
-#define ForWindows(...)
-#define ForMac(...)
-#define ForLinux(...) __VA_ARGS__
-#define ForAndroid(...)
-#define OnWindows 0
-#define OnMac     0
-#define OnLinux   1
-#define OnAndroid 0
+#  define ForWindows(...)
+#  define ForMac(...)
+#  define ForLinux(...) __VA_ARGS__
+#  define ForAndroid(...)
+#  define OnWindows 0
+#  define OnMac     0
+#  define OnLinux   1
+#  define OnAndroid 0
 #elif defined(E0INTERNAL_OS_ANDROID)
-#define ForWindows(...)
-#define ForMac(...)
-#define ForLinux(...)
-#define ForAndroid(...) __VA_ARGS__
-#define OnWindows 0
-#define OnMac     0
-#define OnLinux   0
-#define OnAndroid 1
+#  define ForWindows(...)
+#  define ForMac(...)
+#  define ForLinux(...)
+#  define ForAndroid(...) __VA_ARGS__
+#  define OnWindows 0
+#  define OnMac     0
+#  define OnLinux   0
+#  define OnAndroid 1
 #else
-#error No OS specified.
+#  error No OS specified.
 #endif
 
 #if defined(E0INTERNAL_OS_TYPE_PC)
-#define ForPC(...) __VA_ARGS__
-#define ForMobile(...)
-#define OnPC     1
-#define OnMobile 0
+#  define ForPC(...) __VA_ARGS__
+#  define ForMobile(...)
+#  define OnPC     1
+#  define OnMobile 0
 #elif defined(E0INTERNAL_OS_TYPE_MOBILE)
-#define ForPC(...)
-#define ForMobile(...) __VA_ARGS__
-#define OnPC     0
-#define OnMobile 1
+#  define ForPC(...)
+#  define ForMobile(...) __VA_ARGS__
+#  define OnPC     0
+#  define OnMobile 1
 #else
-#error No platform specified.
+#  error No platform specified.
 #endif
 
 #define WarningForMobile(txt) ForMobile([[deprecated(txt)]])
+
+#ifndef NDEBUG
+#  define DEBUG(...) __VA_ARGS__
+#else
+#  define DEBUG(...)
+#endif
 
 #endif

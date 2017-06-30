@@ -5,6 +5,7 @@
 
 #include "graphics.h"
 #include "math.h"
+#include "os.h"
 #include "utils.h"
 
 class Renderer2D
@@ -20,11 +21,13 @@ class Renderer2D
 
   private:
     ivec2 size;
-    bool use_mouse_mapping;
+    bool use_mouse_mapping = 0;
     Utils::Object<Graphics::RenderQueue<VertexFormat, 3>> render_queue;
     Utils::Object<Graphics::Shader> main_shader;
-    int current_tex;
+    int current_tex = -1;
     ivec2 current_tex_size;
+
+    const Graphics::FontData *default_font = 0;
 
   public:
     static constexpr int default_render_queue_size = 0x10000;
@@ -33,8 +36,6 @@ class Renderer2D
     Renderer2D(ivec2 render_size, int render_queue_size = default_render_queue_size, const Graphics::ShaderSource &shader_src = DefaultShaderSource())
     {
         size = render_size;
-        use_mouse_mapping = 0;
-        current_tex = -1;
         render_queue.create(render_queue_size);
         main_shader.create("Renderer2D shader", shader_src);
         main_shader->SetUniform<fmat4>(0, fmat4::ortho({0,float(size.y)}, {float(size.x), 0}, -1, 1));
@@ -71,6 +72,11 @@ class Renderer2D
         }
     }
 
+    void SetDefaultFont(const Graphics::FontData &font) // The font data object must remain alive while you render text with it.
+    {
+        default_font = &font;
+    }
+
     void EnableShader()
     {
         main_shader->Use();
@@ -100,8 +106,10 @@ class Renderer2D
   private:
     class UnfinishedSprite
     {
-        UnfinishedSprite(const UnfinishedSprite &) = default;
-        UnfinishedSprite &operator=(const UnfinishedSprite &) = default;
+        UnfinishedSprite(const UnfinishedSprite &) = delete;
+        UnfinishedSprite(UnfinishedSprite &&) = delete;
+        UnfinishedSprite &operator=(const UnfinishedSprite &) = delete;
+        UnfinishedSprite &operator=(UnfinishedSprite &&) = delete;
 
         using rvalue = UnfinishedSprite &&;
 
@@ -115,7 +123,8 @@ class Renderer2D
         bool have_center = 0;
         fvec2 sprite_center = {0,0};
 
-        float sprite_angle = 0;
+        bool have_matrix = 0;
+        fmat2 sprite_matrix = fmat2::identity();
 
         bool have_color = 0;
         fvec3 sprite_colors[4] = {fvec3(0),fvec3(0),fvec3(0),fvec3(0)};
@@ -132,17 +141,6 @@ class Renderer2D
         bool sprite_flip_x = 0, sprite_flip_y = 0;
 
       public:
-        UnfinishedSprite(UnfinishedSprite &&o) : UnfinishedSprite(o)
-        {
-            o.renderer = 0;
-        }
-        UnfinishedSprite &operator=(UnfinishedSprite &&o)
-        {
-            *this = o;
-            o.renderer = 0;
-            return *this;
-        }
-
         UnfinishedSprite(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
 
         rvalue tex(fvec2 pos, fvec2 sz)
@@ -179,9 +177,18 @@ class Renderer2D
             sprite_center = dst_size / 2;
             return (rvalue)*this;
         }
-        rvalue angle(float a)
+        rvalue angle(float a) // Uses `matrix()`.
         {
-            sprite_angle = a;
+            matrix(fmat2::rotate2D(a));
+            return (rvalue)*this;
+        }
+        rvalue matrix(fmat2 m) // This can be called multiple times, resulting in multiplying matrices in the order they were passed.
+        {
+            if (have_matrix)
+                sprite_matrix = sprite_matrix /mul/ m;
+            else
+                sprite_matrix = m;
+            have_matrix = 1;
             return (rvalue)*this;
         }
         rvalue color(fvec3 c)
@@ -275,12 +282,8 @@ class Renderer2D
 
         ~UnfinishedSprite()
         {
-            if (!renderer)
-                return;
-
             Assert("2D renderer: Attempt to render a sprite with no texture nor color specified.", have_texture || have_color);
             Assert("2D renderer: Attempt to render a sprite with absolute corner coodinates with a center specified.", absolute_pos + have_center < 2);
-            Assert("2D renderer: Attempt to render a rotated sprite with no center specified.", (sprite_angle != 0) <= have_center);
             Assert("2D renderer: Attempt to render a sprite with both texture and color specified, but without a mixing factor.", (have_texture && have_color) <= have_tex_color_fac);
 
             if (absolute_pos)
@@ -350,13 +353,12 @@ class Renderer2D
             fvec2 b = {a.x, c.y};
             fvec2 d = {c.x, a.y};
 
-            if (sprite_angle != 0)
+            if (have_matrix)
             {
-                fmat2 m = fmat2::rotate2D(sprite_angle);
-                a = m /mul/ a;
-                b = m /mul/ b;
-                c = m /mul/ c;
-                d = m /mul/ d;
+                a = sprite_matrix /mul/ a;
+                b = sprite_matrix /mul/ b;
+                c = sprite_matrix /mul/ c;
+                d = sprite_matrix /mul/ d;
             }
 
             fvec2 tex_a = texture_pos;
@@ -374,38 +376,48 @@ class Renderer2D
 
     class UnfinishedText
     {
+        UnfinishedText(UnfinishedText &&) = delete;
+        UnfinishedText &operator=(const UnfinishedText &) = delete;
+        UnfinishedText &operator=(UnfinishedText &&) = delete;
+
         UnfinishedText(const UnfinishedText &) = default;
-        UnfinishedText &operator=(const UnfinishedText &) = default;
 
         using rvalue = UnfinishedText &&;
 
         Renderer2D *renderer;
 
-        ivec2 position;
-        const Graphics::FontData *font;
+        fvec2 position;
         std::string text;
+
+        const Graphics::FontData *text_font;
 
         ivec2 text_alignment = {0,0};
         fvec3 text_color = {1,1,1};
         float text_alpha = 1;
         float text_opacity = 1;
-        float text_scale = 1;
 
+        bool have_matrix = 0;
+        fmat2 text_matrix = fmat2::identity();
+        bool have_glyph_matrix = 0;
+        fmat2 text_glyph_matrix = fmat2::identity();
+
+        struct Shadow
+        {
+            enum Type {add, set_color, set_alpha, set_opacity, mode_global, mode_text, mode_glyph};
+            Type type;
+            fvec3 value;
+        };
+
+        std::vector<Shadow> text_shadows;
 
       public:
-        UnfinishedText(UnfinishedText &&o) : UnfinishedText(o)
-        {
-            o.renderer = 0;
-        }
-        UnfinishedText &operator=(UnfinishedText &&o)
-        {
-            *this = o;
-            o.renderer = 0;
-            return *this;
-        }
+        UnfinishedText(Renderer2D *r, fvec2 pos, std::string text) : renderer(r), position(pos), text((std::string &&)text), text_font(r->default_font) {}
 
-        UnfinishedText(Renderer2D *r, fvec2 pos, const Graphics::FontData &font, std::string text) : renderer(r), position(pos), font(&font), text((std::string &&)text) {}
-
+        rvalue font(const Graphics::FontData &ref)
+        {
+            text_font = &ref;
+            return (rvalue)*this;
+        }
         rvalue color(fvec3 c)
         {
             text_color = c;
@@ -431,27 +443,183 @@ class Renderer2D
             text_alignment.y = a;
             return (rvalue)*this;
         }
-        rvalue scale(float s)
+        rvalue scale(float s) // Uses `matrix()`.
         {
-            text_scale = s;
+            matrix(fmat2::scale2D(s));
+            return (rvalue)*this;
+        }
+        rvalue angle(float a) // Uses `matrix()`.
+        {
+            matrix(fmat2::rotate2D(a));
+            return (rvalue)*this;
+        }
+        rvalue italic(float tan) // Uses `glyph_matrix()`. `tan` is the italic angle tangent. `0` is the normal text, `1` is 45 degree italic, `+inf` would be 90 degree italic. Negative values are also accepted.
+        {
+            glyph_matrix({1, -tan, 0, 1});
+            return (rvalue)*this;
+        }
+        rvalue matrix(fmat2 m) // This can be called multiple times, resulting in multiplying matrices in the order they were passed.
+        {
+            if (have_matrix)
+                text_matrix = text_matrix /mul/ m;
+            else
+                text_matrix = m;
+            have_matrix = 1;
+            return (rvalue)*this;
+        }
+        rvalue offset(fvec2 o) // This can be called multiple times too. The offset is multiplied by the current matrix.
+        {
+            if (have_matrix)
+                position += text_matrix /mul/ o;
+            else
+                position += o;
+            return (rvalue)*this;
+        }
+        rvalue glyph_matrix(fmat2 m) // This can be called multiple times too. This matrix is applied after the normal one and doesn't affect relative glyph locations.
+        {
+            if (have_glyph_matrix)
+                text_glyph_matrix = text_glyph_matrix /mul/ m;
+            else
+                text_glyph_matrix = m;
+            have_glyph_matrix = 1;
+            return (rvalue)*this;
+        }
+
+        // These can be used multiple times.
+        // Shadows are drawn front to back.
+        rvalue shadow(fvec2 offset)
+        {
+            text_shadows.push_back({Shadow::Type::add, offset.to_vec3()});
+            return (rvalue)*this;
+        }
+        rvalue shadow(const std::vector<fvec2> &offsets)
+        {
+            for (const auto &it : offsets)
+                text_shadows.push_back({Shadow::Type::add, it.to_vec3()});
+            return (rvalue)*this;
+        }
+
+        // These can be used multiple times too.
+        // They affect all shadows created BEFORE they were called.
+        rvalue shadow_color(fvec3 c)
+        {
+            text_shadows.push_back({Shadow::Type::set_color, c});
+            return (rvalue)*this;
+        }
+        rvalue shadow_alpha(float a)
+        {
+            text_shadows.push_back({Shadow::Type::set_alpha, {a,0,0}});
+            return (rvalue)*this;
+        }
+        rvalue shadow_opacity(float o)
+        {
+            text_shadows.push_back({Shadow::Type::set_opacity, {o,0,0}});
+            return (rvalue)*this;
+        }
+        rvalue shadow_mode_glyph() // This is the default.
+        {
+            text_shadows.push_back({Shadow::Type::mode_glyph, {}});
+            return (rvalue)*this;
+        }
+        rvalue shadow_mode_text()
+        {
+            text_shadows.push_back({Shadow::Type::mode_text, {}});
+            return (rvalue)*this;
+        }
+        rvalue shadow_mode_global()
+        {
+            text_shadows.push_back({Shadow::Type::mode_global, {}});
             return (rvalue)*this;
         }
 
         ~UnfinishedText()
         {
-            int initial_x = position.x;
+            // Render shadows
 
-            if (text_alignment.x == 0)
-                position.x -= font->LineWidth(text.begin()) / 2 * text_scale;
-            else if (text_alignment.x > 0)
-                position.x -= font->LineWidth(text.begin()) * text_scale;
+            fvec3 text_shadow_color = {0,0,0};
+            float text_shadow_alpha = 1;
+            float text_shadow_opacity = 1;
+
+            enum class ShadowMode
+            {
+                global = Shadow::mode_global,
+                text   = Shadow::mode_text,
+                glyph  = Shadow::mode_glyph,
+            };
+            ShadowMode text_shadow_mode = ShadowMode::glyph;
+
+            auto text_shadows_copy = text_shadows;
+            text_shadows.clear();
+
+            DEBUG(bool unused_settings = 0;)
+
+            for (auto it = text_shadows_copy.rbegin(); it != text_shadows_copy.rend(); it++)
+            {
+                switch (it->type)
+                {
+                  case Shadow::add:
+                    {
+                        auto tmp_text = *this;
+                        switch (text_shadow_mode)
+                        {
+                          case ShadowMode::global:
+                            tmp_text.position += it->value.to_vec2();
+                            break;
+                          case ShadowMode::text:
+                            tmp_text.position += text_matrix /mul/ it->value.to_vec2();
+                            break;
+                          case ShadowMode::glyph:
+                            tmp_text.position += text_matrix /mul/ text_glyph_matrix /mul/ it->value.to_vec2();
+                            break;
+                        }
+                        tmp_text.text_color = text_shadow_color;
+                        tmp_text.text_alpha = text_shadow_alpha;
+                        tmp_text.text_opacity = text_shadow_opacity;
+                        DEBUG(unused_settings = 0;)
+                    }
+                    break;
+                  case Shadow::set_color:
+                    text_shadow_color = it->value;
+                    DEBUG(unused_settings = 1;)
+                    break;
+                  case Shadow::set_alpha:
+                    text_shadow_alpha = it->value.x;
+                    DEBUG(unused_settings = 1;)
+                    break;
+                  case Shadow::set_opacity:
+                    text_shadow_opacity = it->value.x;
+                    DEBUG(unused_settings = 1;)
+                    break;
+                  case Shadow::mode_global:
+                  case Shadow::mode_text:
+                  case Shadow::mode_glyph:
+                    text_shadow_mode = (ShadowMode)it->type;
+                    DEBUG(unused_settings = 1;)
+                    break;
+                }
+            }
+            Assert("2D renderer: Attempt to specify text shadow parameters without an active shadow.", unused_settings == 0);
+
+
+            // Render the text itself
+
+            if (have_glyph_matrix)
+                text_glyph_matrix = text_matrix /mul/ text_glyph_matrix;
 
             if (text_alignment.y == 0)
-                position.y -= font->TextHeight(text.begin()) / 2 * text_scale;
+                position -= text_font->TextHeight(text.begin()) / 2 * text_matrix.y;
             else if (text_alignment.y > 0)
-                position.y -= (font->TextHeight(text.begin()) + font->Descent()) * text_scale;
+                position -= (text_font->TextHeight(text.begin()) + text_font->Descent()) * text_matrix.y;
             else
-                position.y += font->Ascent() * text_scale;
+                position += text_font->Ascent() * text_matrix.y;
+
+            fvec2 line_pos = position;
+
+            if (text_alignment.x == 0)
+                position -= text_font->LineWidth(text.begin()) / 2 * text_matrix.x;
+            else if (text_alignment.x > 0)
+                position -= text_font->LineWidth(text.begin()) * text_matrix.x;
+
 
             uint16_t prev_ch = 0;
 
@@ -460,28 +628,28 @@ class Renderer2D
                 if (!u8firstbyte(it))
                     continue;
                 uint16_t ch = u8decode(it);
-                if (!font->GlyphExists(ch))
+                if (!text_font->GlyphExists(ch))
                     ch = 0;
 
                 if (ch == '\n')
                 {
-                    position.x = initial_x;
+                    line_pos += text_font->LineSkip() * text_matrix.y;
+                    position = line_pos;
                     if (text_alignment.x == 0)
-                        position.x -= font->LineWidth(it+1) / 2 * text_scale;
+                        position -= text_font->LineWidth(it+1) / 2 * text_matrix.x;
                     else if (text_alignment.x > 0)
-                        position.x -= font->LineWidth(it+1) * text_scale;
-                    position.y += font->LineSkip() * text_scale;
+                        position -= text_font->LineWidth(it+1) * text_matrix.x;
                     continue;
                 }
                 else
                 {
-                    position.x += font->Kerning(prev_ch, ch) * text_scale;
+                    position += text_font->Kerning(prev_ch, ch) * text_matrix.x;
 
-                    const auto &glyph_data = font->Glyph(ch);
+                    const auto &glyph_data = text_font->Glyph(ch);
 
-                    renderer->Sprite(position + glyph_data.offset * text_scale, glyph_data.size * text_scale).tex(glyph_data.pos, glyph_data.size).color(text_color).mix(0).alpha(text_alpha).opacity(text_opacity);
+                    renderer->Sprite(position + text_glyph_matrix /mul/ glyph_data.offset, glyph_data.size).tex(glyph_data.pos, glyph_data.size).color(text_color).mix(0).alpha(text_alpha).opacity(text_opacity).matrix(text_glyph_matrix);
 
-                    position.x += glyph_data.advance * text_scale;
+                    position += glyph_data.advance * text_matrix.x;
                 }
 
                 prev_ch = ch;
@@ -495,9 +663,9 @@ class Renderer2D
         return {this, pos, size};
     }
 
-    UnfinishedText Text(ivec2 pos, const Graphics::FontData &font, std::string text)
+    UnfinishedText Text(ivec2 pos, std::string text)
     {
-        return {this, pos, font, text};
+        return {this, pos, text};
     }
 };
 

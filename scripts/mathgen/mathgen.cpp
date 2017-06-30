@@ -6,7 +6,7 @@
 #include <sstream>
 
 // ---------------------------- UPDATE THIS WHEN YOU CHANGE THE CODE
-#define VERSION "2.3.0"
+#define VERSION "2.3.1"
 // ---------------------------- UPDATE THIS WHEN YOU CHANGE THE CODE
 
 std::ofstream out_file("math.h");
@@ -811,7 +811,7 @@ return inv * det;
                         }
                         l "};}\n";
                     }
-                    { // Static pseudo-constructors
+                    { // Factory methods
                         l "static constexpr vec identity() {return {"; // Identity
                         for (int hh = 0; hh < h; hh++)
                         {
@@ -824,9 +824,8 @@ return inv * det;
                         }
                         l "};}\n";
 
-                        for (int i = 2; i <= 4; i++) // Diagonal
+                        for (int i = 2; i <= std::min(w,h); i++) // Diagonal
                         {
-                            if (i > std::min(w,h)) break;
                             l "static constexpr vec dia(const vec" << i << "<type> &v) {return {";
                             for (int hh = 0; hh < h; hh++)
                             {
@@ -844,7 +843,7 @@ return inv * det;
                             l "};}\n";
                         }
 
-                        auto MatrixPseudoCtorCascade = [&](int minw, int minh, const char *name, const char *params, const char *sh_params, const char *body, bool float_only = 1)
+                        auto MatrixFactoryMethod = [&](int minw, int minh, const char *name, const char *params, const char *sh_params, const char *body, bool float_only = 1)
                         {
                             if (w == minw && h == minh)
                             {
@@ -855,25 +854,25 @@ return inv * det;
                             else if (w >= minw && h >= minh) l "static constexpr vec " << name << '(' << params << ") {return mat" << minw << 'x' << minh << "<type>::" << name << "(" << sh_params << ").to_mat" << w << 'x' << h << "();}\n";
                         };
 
-                        MatrixPseudoCtorCascade(2, 2, "ortho2D", "const vec2<type> &sz", "sz", R"(
+                        MatrixFactoryMethod(2, 2, "ortho2D", "const vec2<type> &sz", "sz", R"(
 return {2 / sz.x, 0,
 $       0, 2 / sz.y};
 )");
-                        MatrixPseudoCtorCascade(3, 2, "ortho2D", "const vec2<type> &min, const vec2<type> &max", "min, max", R"(
+                        MatrixFactoryMethod(3, 2, "ortho2D", "const vec2<type> &min, const vec2<type> &max", "min, max", R"(
 return {2 / (max.x - min.x), 0, (min.x + max.x) / (min.x - max.x),
 $       0, 2 / (max.y - min.y), (min.y + max.y) / (min.y - max.y)};
 )");
-                        MatrixPseudoCtorCascade(4, 3, "ortho", "const vec2<type> &sz, type near, type far", "sz, near, far", R"(
+                        MatrixFactoryMethod(4, 3, "ortho", "const vec2<type> &sz, type near, type far", "sz, near, far", R"(
 return {2 / sz.x, 0, 0, 0,
 $       0, 2 / sz.y, 0, 0,
 $       0, 0, 2 / (near - far), (near + far) / (near - far)};
 )");
-                        MatrixPseudoCtorCascade(4, 3, "ortho", "const vec2<type> &min, const vec2<type> &max, type near, type far", "min, max, near, far", R"(
+                        MatrixFactoryMethod(4, 3, "ortho", "const vec2<type> &min, const vec2<type> &max, type near, type far", "min, max, near, far", R"(
 return {2 / (max.x - min.x), 0, 0, (min.x + max.x) / (min.x - max.x),
 $       0, 2 / (max.y - min.y), 0, (min.y + max.y) / (min.y - max.y),
 $       0, 0, 2 / (near - far), (near + far) / (near - far)};
 )");
-                        MatrixPseudoCtorCascade(4, 3, "look_at", "const vec3<type> &src, const vec3<type> &dst, const vec3<type> &local_up", "src, dst, local_up", R"(
+                        MatrixFactoryMethod(4, 3, "look_at", "const vec3<type> &src, const vec3<type> &dst, const vec3<type> &local_up", "src, dst, local_up", R"(
 vec3<T> v3 = (src-dst).norm();
 vec3<T> v1 = local_up.cross(v3).norm();
 vec3<T> v2 = v3.cross(v1);
@@ -881,42 +880,48 @@ return {v1.x, v1.y, v1.z, -src.x*v1.x - src.y*v1.y - src.z*v1.z,
 $       v2.x, v2.y, v2.z, -src.x*v2.x - src.y*v2.y - src.z*v2.z,
 $       v3.x, v3.y, v3.z, -src.x*v3.x - src.y*v3.y - src.z*v3.z};
 )");
-                        MatrixPseudoCtorCascade(4, 3, "translate", "const vec3<type> &in", "in", R"(
+                        MatrixFactoryMethod(4, 3, "translate", "const vec3<type> &in", "in", R"(
 return {1, 0, 0, in.x,
 $       0, 1, 0, in.y,
 $       0, 0, 1, in.z};
 )", 0);
-                        MatrixPseudoCtorCascade(2, 2, "rotate2D", "type angle", "angle", R"(
+                        MatrixFactoryMethod(2, 2, "rotate2D", "type angle", "angle", R"(
 type c = std::cos(angle);
 type s = std::sin(angle);
 return {c, -s,
 $       s, c};
 )");
-                        MatrixPseudoCtorCascade(3, 3, "rotate_with_normalized_axis", "const vec3<type> &in, type angle", "in, angle", R"(
+                        MatrixFactoryMethod(3, 3, "rotate_with_normalized_axis", "const vec3<type> &in, type angle", "in, angle", R"(
 type c = std::cos(angle);
 type s = std::sin(angle);
 return {in.x * in.x * (1 - c) + c, in.x * in.y * (1 - c) - in.z * s, in.x * in.z * (1 - c) + in.y * s,
 $       in.y * in.x * (1 - c) + in.z * s, in.y * in.y * (1 - c) + c, in.y * in.z * (1 - c) - in.x * s,
 $       in.x * in.z * (1 - c) - in.y * s, in.y * in.z * (1 - c) + in.x * s, in.z * in.z * (1 - c) + c};
 )");
-                        MatrixPseudoCtorCascade(3, 3, "rotate", "const vec3<type> &in, type angle", "in, angle", R"(
+                        MatrixFactoryMethod(3, 3, "rotate", "const vec3<type> &in, type angle", "in, angle", R"(
 return rotate_with_normalized_axis(in.norm(), angle);
 )");
-                        MatrixPseudoCtorCascade(4, 4, "perspective", "type yfov, type wh_aspect, type near, type far", "yfov, wh_aspect, near, far", R"(
+                        MatrixFactoryMethod(4, 4, "perspective", "type yfov, type wh_aspect, type near, type far", "yfov, wh_aspect, near, far", R"(
 yfov = (T)1 / std::tan(yfov / 2);
 return {yfov / wh_aspect , 0    , 0                           , 0                             ,
 $       0                , yfov , 0                           , 0                             ,
 $       0                , 0    , (near + far) / (near - far) , 2 * near * far / (near - far) ,
 $       0                , 0    , -1                          , 0                             };
 )");
-                        MatrixPseudoCtorCascade(2, 2, "scale2D", "const vec2<type> &v", "v", R"(
-return {v.x, 0,
-$       0, v.y};
+                        MatrixFactoryMethod(2, 2, "scale2D", "type s", "s", R"(
+return {s, 0,
+$       0, s};
 )", 0);
-                        MatrixPseudoCtorCascade(3, 3, "scale", "const vec3<type> &v", "v", R"(
-return {v.x, 0, 0,
-$       0, v.y, 0,
-$       0, 0, v.z};
+                        MatrixFactoryMethod(3, 3, "scale", "type s", "s", R"(
+return {s, 0, 0,
+$       0, s, 0,
+$       0, 0, s};
+)", 0);
+                        MatrixFactoryMethod(4, 4, "scale4D", "type s", "s", R"(
+return {s, 0, 0, 0,
+$       0, s, 0, 0,
+$       0, 0, s, 0,
+$       0, 0, 0, s};
 )", 0);
                     }
                     { // 2D resizers
