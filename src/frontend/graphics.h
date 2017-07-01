@@ -1348,20 +1348,20 @@ namespace Graphics
             return kerning_func(a, b);
         }
 
-        int TextHeight(std::string::const_iterator iter) const
+        template <typename T = int> T TextHeight(std::string::const_iterator iter, T spacing = 0) const
         {
-            int ret = 0;
+            T ret = line_skip;
             while (*iter)
             {
                 if (*iter == '\n')
-                    ret += line_skip;
+                    ret += line_skip + spacing;
                 iter++;
             }
             return ret;
         }
-        int LineWidth(std::string::const_iterator iter) const
+        template <typename T = int> T LineWidth(std::string::const_iterator iter, T spacing = 0) const
         {
-            int ret = 0;
+            T ret = -spacing;
             uint16_t prev = 0;
             while (*iter && *iter != '\n')
             {
@@ -1371,7 +1371,7 @@ namespace Graphics
                     bool found = GlyphExists(ch);
                     if (!found)
                         ch = 0;
-                    ret += Glyph(ch).advance + Kerning(prev, ch);
+                    ret += Glyph(ch).advance + Kerning(prev, ch) + spacing;
                     prev = ch;
                 }
                 iter++;

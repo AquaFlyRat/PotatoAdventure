@@ -396,9 +396,9 @@ class Renderer2D
         float text_alpha = 1;
         float text_opacity = 1;
 
-        bool have_matrix = 0;
+        fvec2 text_spacing = {0,0};
+
         fmat2 text_matrix = fmat2::identity();
-        bool have_glyph_matrix = 0;
         fmat2 text_glyph_matrix = fmat2::identity();
 
         struct Shadow
@@ -409,6 +409,17 @@ class Renderer2D
         };
 
         std::vector<Shadow> text_shadows;
+
+        enum class RefFrame
+        {
+            global = Shadow::mode_global,
+            text   = Shadow::mode_text,
+            glyph  = Shadow::mode_glyph,
+        };
+
+        RefFrame text_duplicate_ref_frame = RefFrame::glyph;
+        std::vector<fvec2> text_duplicate_offsets;
+
 
       public:
         UnfinishedText(Renderer2D *r, fvec2 pos, std::string text) : renderer(r), position(pos), text((std::string &&)text), text_font(r->default_font) {}
@@ -458,30 +469,85 @@ class Renderer2D
             glyph_matrix({1, -tan, 0, 1});
             return (rvalue)*this;
         }
+        rvalue bold(float pixels) // Uses `spacing()`, `offset()` and `extend()`. Fractional values larger than 1 don't work well with (large) semitransparent fonts.
+        {
+            if (pixels > 0)
+            {
+                spacing(pixels);
+                offset({-pixels/2, 0});
+                for (int i = 1; i <= int(pixels); i++)
+                    extend({float(i),0});
+                if (pixels != int(pixels))
+                    extend({pixels,0});
+            }
+            return (rvalue)*this;
+        }
+        rvalue bold_no_offset(float pixels) // Same as normal `bold()`, but without `-pixels/2` offset. Useful for small width values used with pixel fonts.
+        {
+            if (pixels > 0)
+            {
+                spacing(pixels);
+                for (int i = 1; i <= int(pixels); i++)
+                    extend({float(i),0});
+                if (pixels != int(pixels))
+                    extend({pixels,0});
+            }
+            return (rvalue)*this;
+        }
+        rvalue spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
+        {
+            text_spacing.x += pixels;
+            return (rvalue)*this;
+        }
+        rvalue vertical_spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
+        {
+            text_spacing.y += pixels;
+            return (rvalue)*this;
+        }
         rvalue matrix(fmat2 m) // This can be called multiple times, resulting in multiplying matrices in the order they were passed.
         {
-            if (have_matrix)
-                text_matrix = text_matrix /mul/ m;
-            else
-                text_matrix = m;
-            have_matrix = 1;
+            text_matrix = text_matrix /mul/ m;
             return (rvalue)*this;
         }
         rvalue offset(fvec2 o) // This can be called multiple times too. The offset is multiplied by the current matrix.
         {
-            if (have_matrix)
-                position += text_matrix /mul/ o;
-            else
-                position += o;
+            position += text_matrix /mul/ o;
             return (rvalue)*this;
         }
         rvalue glyph_matrix(fmat2 m) // This can be called multiple times too. This matrix is applied after the normal one and doesn't affect relative glyph locations.
         {
-            if (have_glyph_matrix)
-                text_glyph_matrix = text_glyph_matrix /mul/ m;
-            else
-                text_glyph_matrix = m;
-            have_glyph_matrix = 1;
+            text_glyph_matrix = text_glyph_matrix /mul/ m;
+            return (rvalue)*this;
+        }
+
+        // These can be called multiple times.
+        // They create a copy of the same text with speicified offsets. Shadows are copied too.
+        rvalue extend(fvec2 offset)
+        {
+            text_duplicate_offsets.push_back(offset);
+            return (rvalue)*this;
+        }
+        rvalue extend(const std::vector<fvec2> &offsets)
+        {
+            for (const auto &it : offsets)
+                text_duplicate_offsets.push_back(it);
+            return (rvalue)*this;
+        }
+
+        // These affect all text copies and specify a reference frame in which offsets are specified.
+        rvalue extend_ref_frame_glyph()
+        {
+            text_duplicate_ref_frame = RefFrame::glyph;
+            return (rvalue)*this;
+        }
+        rvalue extend_ref_frame_text()
+        {
+            text_duplicate_ref_frame = RefFrame::text;
+            return (rvalue)*this;
+        }
+        rvalue extend_ref_frame_global()
+        {
+            text_duplicate_ref_frame = RefFrame::global;
             return (rvalue)*this;
         }
 
@@ -499,7 +565,7 @@ class Renderer2D
             return (rvalue)*this;
         }
 
-        // These can be used multiple times too.
+        // These can be used multiple times.
         // They affect all shadows created BEFORE they were called.
         rvalue shadow_color(fvec3 c)
         {
@@ -516,17 +582,19 @@ class Renderer2D
             text_shadows.push_back({Shadow::Type::set_opacity, {o,0,0}});
             return (rvalue)*this;
         }
-        rvalue shadow_mode_glyph() // This is the default.
+
+        // These affect all shadows and specify a reference frame in which offsets are specified.
+        rvalue shadow_ref_frame_glyph() // This is the default.
         {
             text_shadows.push_back({Shadow::Type::mode_glyph, {}});
             return (rvalue)*this;
         }
-        rvalue shadow_mode_text()
+        rvalue shadow_ref_frame_text()
         {
             text_shadows.push_back({Shadow::Type::mode_text, {}});
             return (rvalue)*this;
         }
-        rvalue shadow_mode_global()
+        rvalue shadow_ref_frame_global()
         {
             text_shadows.push_back({Shadow::Type::mode_global, {}});
             return (rvalue)*this;
@@ -540,13 +608,7 @@ class Renderer2D
             float text_shadow_alpha = 1;
             float text_shadow_opacity = 1;
 
-            enum class ShadowMode
-            {
-                global = Shadow::mode_global,
-                text   = Shadow::mode_text,
-                glyph  = Shadow::mode_glyph,
-            };
-            ShadowMode text_shadow_mode = ShadowMode::glyph;
+            RefFrame text_shadow_ref_frame = RefFrame::glyph;
 
             auto text_shadows_copy = text_shadows;
             text_shadows.clear();
@@ -560,15 +622,15 @@ class Renderer2D
                   case Shadow::add:
                     {
                         auto tmp_text = *this;
-                        switch (text_shadow_mode)
+                        switch (text_shadow_ref_frame)
                         {
-                          case ShadowMode::global:
+                          case RefFrame::global:
                             tmp_text.position += it->value.to_vec2();
                             break;
-                          case ShadowMode::text:
+                          case RefFrame::text:
                             tmp_text.position += text_matrix /mul/ it->value.to_vec2();
                             break;
-                          case ShadowMode::glyph:
+                          case RefFrame::glyph:
                             tmp_text.position += text_matrix /mul/ text_glyph_matrix /mul/ it->value.to_vec2();
                             break;
                         }
@@ -593,7 +655,7 @@ class Renderer2D
                   case Shadow::mode_global:
                   case Shadow::mode_text:
                   case Shadow::mode_glyph:
-                    text_shadow_mode = (ShadowMode)it->type;
+                    text_shadow_ref_frame = (RefFrame)it->type;
                     DEBUG(unused_settings = 1;)
                     break;
                 }
@@ -601,24 +663,46 @@ class Renderer2D
             Assert("2D renderer: Attempt to specify text shadow parameters without an active shadow.", unused_settings == 0);
 
 
+            // Render copies
+
+            auto text_duplicate_offsets_copy = text_duplicate_offsets;
+            text_duplicate_offsets.clear();
+
+            for (const auto &it : text_duplicate_offsets_copy)
+            {
+                auto tmp_text = *this;
+                switch (text_duplicate_ref_frame)
+                {
+                  case RefFrame::global:
+                    tmp_text.position += it;
+                    break;
+                  case RefFrame::text:
+                    tmp_text.position += text_matrix /mul/ it;
+                    break;
+                  case RefFrame::glyph:
+                    tmp_text.position += text_matrix /mul/ text_glyph_matrix /mul/ it;
+                    break;
+                }
+            }
+
+
             // Render the text itself
 
-            if (have_glyph_matrix)
-                text_glyph_matrix = text_matrix /mul/ text_glyph_matrix;
+            text_glyph_matrix = text_matrix /mul/ text_glyph_matrix;
 
             if (text_alignment.y == 0)
-                position -= text_font->TextHeight(text.begin()) / 2 * text_matrix.y;
+                position -= (text_font->TextHeight(text.begin(), text_spacing.y) - text_font->Height()) / 2 * text_matrix.y;
             else if (text_alignment.y > 0)
-                position -= (text_font->TextHeight(text.begin()) + text_font->Descent()) * text_matrix.y;
+                position -= (text_font->TextHeight(text.begin(), text_spacing.y) - text_font->Ascent()) * text_matrix.y;
             else
                 position += text_font->Ascent() * text_matrix.y;
 
             fvec2 line_pos = position;
 
             if (text_alignment.x == 0)
-                position -= text_font->LineWidth(text.begin()) / 2 * text_matrix.x;
+                position -= (text_font->LineWidth(text.begin(), text_spacing.x) + text_spacing.x) / 2 * text_matrix.x;
             else if (text_alignment.x > 0)
-                position -= text_font->LineWidth(text.begin()) * text_matrix.x;
+                position -= (text_font->LineWidth(text.begin(), text_spacing.x) + text_spacing.x) * text_matrix.x;
 
 
             uint16_t prev_ch = 0;
@@ -636,20 +720,21 @@ class Renderer2D
                     line_pos += text_font->LineSkip() * text_matrix.y;
                     position = line_pos;
                     if (text_alignment.x == 0)
-                        position -= text_font->LineWidth(it+1) / 2 * text_matrix.x;
+                        position -= (text_font->LineWidth(it+1, text_spacing.x) + text_spacing.x) / 2 * text_matrix.x;
                     else if (text_alignment.x > 0)
-                        position -= text_font->LineWidth(it+1) * text_matrix.x;
+                        position -= (text_font->LineWidth(it+1, text_spacing.x) + text_spacing.x) * text_matrix.x;
                     continue;
                 }
                 else
                 {
-                    position += text_font->Kerning(prev_ch, ch) * text_matrix.x;
-
                     const auto &glyph_data = text_font->Glyph(ch);
 
-                    renderer->Sprite(position + text_glyph_matrix /mul/ glyph_data.offset, glyph_data.size).tex(glyph_data.pos, glyph_data.size).color(text_color).mix(0).alpha(text_alpha).opacity(text_opacity).matrix(text_glyph_matrix);
+                    float center_offset_x = glyph_data.offset.x + glyph_data.size.x / 2.f;
+                    position += (text_font->Kerning(prev_ch, ch) + center_offset_x + text_spacing.x / 2) * text_matrix.x;
 
-                    position += glyph_data.advance * text_matrix.x;
+                    renderer->Sprite(position + (glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size).center().tex(glyph_data.pos, glyph_data.size).color(text_color).mix(0).alpha(text_alpha).opacity(text_opacity).matrix(text_glyph_matrix);
+
+                    position += (glyph_data.advance - center_offset_x + text_spacing.x / 2) * text_matrix.x;
                 }
 
                 prev_ch = ch;
