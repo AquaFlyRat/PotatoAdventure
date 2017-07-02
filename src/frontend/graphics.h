@@ -1347,37 +1347,6 @@ namespace Graphics
         {
             return kerning_func(a, b);
         }
-
-        template <typename T = int> T TextHeight(std::string::const_iterator iter, T spacing = 0) const
-        {
-            T ret = line_skip;
-            while (*iter)
-            {
-                if (*iter == '\n')
-                    ret += line_skip + spacing;
-                iter++;
-            }
-            return ret;
-        }
-        template <typename T = int> T LineWidth(std::string::const_iterator iter, T spacing = 0) const
-        {
-            T ret = -spacing;
-            uint16_t prev = 0;
-            while (*iter && *iter != '\n')
-            {
-                if (u8firstbyte(*iter))
-                {
-                    uint16_t ch = u8decode(iter);
-                    bool found = GlyphExists(ch);
-                    if (!found)
-                        ch = 0;
-                    ret += Glyph(ch).advance + Kerning(prev, ch) + spacing;
-                    prev = ch;
-                }
-                iter++;
-            }
-            return ret;
-        }
     };
 
     class Font

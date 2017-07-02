@@ -1,7 +1,7 @@
 #ifndef RENDERER2D_H_INCLUDED
 #define RENDERER2D_H_INCLUDED
 
-#include <cstdlib>
+#include <algorithm>
 
 #include "graphics.h"
 #include "math.h"
@@ -104,14 +104,14 @@ class Renderer2D
     }
 
   private:
-    class UnfinishedSprite
+    class Sprite
     {
-        UnfinishedSprite(const UnfinishedSprite &) = delete;
-        UnfinishedSprite(UnfinishedSprite &&) = delete;
-        UnfinishedSprite &operator=(const UnfinishedSprite &) = delete;
-        UnfinishedSprite &operator=(UnfinishedSprite &&) = delete;
+        Sprite(const Sprite &) = delete;
+        Sprite(Sprite &&) = delete;
+        Sprite &operator=(const Sprite &) = delete;
+        Sprite &operator=(Sprite &&) = delete;
 
-        using rvalue = UnfinishedSprite &&;
+        using rvalue = Sprite &&;
 
         Renderer2D *renderer;
 
@@ -141,7 +141,7 @@ class Renderer2D
         bool sprite_flip_x = 0, sprite_flip_y = 0;
 
       public:
-        UnfinishedSprite(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
+        Sprite(Renderer2D *r, fvec2 pos, fvec2 sz) : renderer(r), dst_pos(pos), dst_size(sz) {}
 
         rvalue tex(fvec2 pos, fvec2 sz)
         {
@@ -280,7 +280,7 @@ class Renderer2D
             return (rvalue)*this;
         }
 
-        ~UnfinishedSprite()
+        ~Sprite()
         {
             Assert("2D renderer: Attempt to render a sprite with no texture nor color specified.", have_texture || have_color);
             Assert("2D renderer: Attempt to render a sprite with absolute corner coodinates with a center specified.", absolute_pos + have_center < 2);
@@ -374,41 +374,34 @@ class Renderer2D
         }
     };
 
-    class UnfinishedText
+    using Sprite_t = Sprite; // For cases when `Sprite` conflicts with the function name.
+  public:
+    class Text
     {
-        UnfinishedText(UnfinishedText &&) = delete;
-        UnfinishedText &operator=(const UnfinishedText &) = delete;
-        UnfinishedText &operator=(UnfinishedText &&) = delete;
+        Text(Text &&) = delete;
+        Text &operator=(const Text &) = delete;
+        Text &operator=(Text &&) = delete;
 
-        UnfinishedText(const UnfinishedText &) = default;
+        Text(const Text &) = default;
 
-        using rvalue = UnfinishedText &&;
+        using rvalue = Text &&;
 
         Renderer2D *renderer;
 
         fvec2 position;
-        std::string text;
-
-        const Graphics::FontData *text_font;
-
-        ivec2 text_alignment = {0,0};
-        fvec3 text_color = {1,1,1};
-        float text_alpha = 1;
-        float text_opacity = 1;
-
-        fvec2 text_spacing = {0,0};
+        std::string_view text;
 
         fmat2 text_matrix = fmat2::identity();
-        fmat2 text_glyph_matrix = fmat2::identity();
+        ivec2 text_alignment = {0,0};
+        fvec2 text_global_spacing = {0,0};
 
+      public:
         struct Shadow
         {
             enum Type {add, set_color, set_alpha, set_opacity, mode_global, mode_text, mode_glyph};
             Type type;
             fvec3 value;
         };
-
-        std::vector<Shadow> text_shadows;
 
         enum class RefFrame
         {
@@ -417,33 +410,121 @@ class Renderer2D
             glyph  = Shadow::mode_glyph,
         };
 
-        RefFrame text_duplicate_ref_frame = RefFrame::glyph;
-        std::vector<fvec2> text_duplicate_offsets;
+        struct Style
+        {
+            Style(bool was_initialized = 0) : was_initialized(was_initialized) {}
 
+            bool was_initialized = 0;
+
+            const Graphics::FontData *font;
+
+            fvec3 color = {1,1,1};
+            float alpha = 1;
+            float opacity = 1;
+
+            fvec2 spacing = {0,0};
+
+            fmat2 glyph_matrix = fmat2::identity();
+            fvec2 glyph_offset = {0,0};
+
+            RefFrame duplicate_ref_frame = RefFrame::glyph;
+            std::vector<fvec2> duplicate_offsets;
+
+            std::vector<Shadow> shadows;
+        };
+
+      private:
+        int text_cur_style = 0;
+        std::vector<Style> text_styles = {{1}};
+
+        bool internal_temporary_object = 0; // Used by shadows and `extend()`ed copies.
+        fvec2 internal_line_pos;
+
+        bool internal_stub_object; // For stub objects used only to edit styles.
+
+        static bool internal_IsStyleMarker(char ch)
+        {
+            return ch == '\r' || (ch >= '\1' && ch <= '\7');
+        }
+        static int internal_StyleMarkerToIndex(char ch)
+        {
+            if (ch == '\r')
+                return 0;
+            return ch;
+        }
+
+        static float internal_LineWidth(const std::vector<Style> &settings, std::string_view str, int state, int *final_state = 0)
+        {
+            float ret = 0;
+            uint16_t prev_ch = u8invalidchar;
+            for (auto it = str.begin(); it != str.end(); it++)
+            {
+                if (*it == '\n')
+                {
+                    prev_ch = u8invalidchar;
+                    if (final_state)
+                        *final_state = state;
+                    break;
+                }
+                else if (internal_IsStyleMarker(*it))
+                {
+                    state = internal_StyleMarkerToIndex(*it);
+                    prev_ch = u8invalidchar;
+                }
+                else
+                {
+                    if (!u8firstbyte(it))
+                        continue;
+                    uint16_t ch = u8decode(it);
+                    if (!settings[state].font->GlyphExists(ch))
+                        ch = 0;
+                    ret += settings[state].font->Glyph(ch).advance + settings[state].spacing.x;
+                    if (prev_ch != u8invalidchar)
+                        ret += settings[state].font->Kerning(prev_ch, ch);
+                    prev_ch = ch;
+                }
+            }
+            return ret - settings[state].spacing.x;
+        }
+        static float internal_BaselineHeight(const std::vector<Style> &settings, std::string_view str, int state, int *final_state = 0)
+        {
+            float ret = 0;
+            for (char it : str)
+            {
+                if (it == '\n')
+                    ret += settings[state].font->LineSkip() + settings[state].spacing.y;
+                else if (internal_IsStyleMarker(it))
+                    state = internal_StyleMarkerToIndex(it);
+            }
+            if (final_state)
+                *final_state = state;
+            return ret - settings[state].spacing.y;
+        }
 
       public:
-        UnfinishedText(Renderer2D *r, fvec2 pos, std::string text) : renderer(r), position(pos), text((std::string &&)text), text_font(r->default_font) {}
 
-        rvalue font(const Graphics::FontData &ref)
+        Text(Renderer2D *r, fvec2 pos, std::string_view text, bool stub = 0) : renderer(r), position(pos), text(text), internal_stub_object(stub)
         {
-            text_font = &ref;
-            return (rvalue)*this;
+            text_styles[0].font = r->default_font;
         }
-        rvalue color(fvec3 c)
+
+
+        // Utilities
+
+        static float LineWidth(const std::vector<Style> &settings, std::string_view str)
         {
-            text_color = c;
-            return (rvalue)*this;
+            return internal_LineWidth(settings, str, 0);
         }
-        rvalue alpha(float a)
+        static float Height(const std::vector<Style> &settings, std::string_view str)
         {
-            text_alpha = a;
-            return (rvalue)*this;
+            int final_state;
+            float ret = internal_BaselineHeight(settings, str, 0, &final_state);
+            return ret + settings[0].font->Ascent() + settings[final_state].font->Descent();
         }
-        rvalue opacity(float a)
-        {
-            text_opacity = a;
-            return (rvalue)*this;
-        }
+
+
+        // Style-independent settings
+
         rvalue align_h(int a)
         {
             text_alignment.x = a;
@@ -464,6 +545,105 @@ class Renderer2D
             matrix(fmat2::rotate2D(a));
             return (rvalue)*this;
         }
+        rvalue matrix(fmat2 m) // This can be called multiple times, resulting in multiplying matrices in the order they were passed.
+        {
+            text_matrix = text_matrix /mul/ m;
+            return (rvalue)*this;
+        }
+        rvalue global_spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
+        {
+            text_global_spacing.x += pixels;
+            return (rvalue)*this;
+        }
+        rvalue global_vertical_spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
+        {
+            text_global_spacing.y += pixels;
+            return (rvalue)*this;
+        }
+
+
+        // Styles
+
+        // `index` must be in range [0;7]. `0` is default. To activate a style 1..7, use '\#' in your string (where # = style index). To activate the default (0th) style, use '\r'.
+        // When `configure_style` is called for the first time for an index (other than 0), it's copied from a `src`-th style.
+        rvalue configure_style(int index, int src = 0)
+        {
+            Assert("2D renderer: Style index is out of range", index >= 0 && index < 8);
+            Assert("2D renderer: Source style index is invalid", src >= 0 && src < 8 && src < int(text_styles.size()) && src != index && text_styles[src].was_initialized);
+            text_cur_style = index;
+            if (index >= int(text_styles.size()))
+                text_styles.resize(index+1);
+            if (!text_styles[index].was_initialized)
+                text_styles[index] = text_styles[0];
+            return (rvalue)*this;
+        }
+        rvalue style(const Style &style, int index = -1) // If index is equal to -1, the current style is changed.
+        {
+            if (index == -1)
+                index = text_cur_style;
+            Assert("2D renderer: Imported style index is invalid", index >= 0 && index < 8 && (index >= int(text_styles.size()) || text_styles[index].was_initialized == 0));
+            if (index >= int(text_styles.size()))
+                text_styles.resize(index+1);
+            text_styles[index] = style;
+            return (rvalue)*this;
+        }
+        rvalue styles(const std::vector<Style> &style_vec) // This overwrites all styles.
+        {
+            text_styles = style_vec;
+            return (rvalue)*this;
+        }
+        rvalue export_style(Style &style, int index = -1) // If index is equal to -1, the current style is exported. This discards current text drawing command. It's recommended to use it with stub (null) text and postiton.
+        {
+            Assert("2D renderer: Normal text object was used for style editing instead of stub one.", internal_stub_object);
+            if (index == -1)
+                index = text_cur_style;
+            Assert("2D renderer: Exported text style index is out of range", index >= 0 && index < int(text_styles.size()));
+            style = text_styles[index];
+            return (rvalue)*this;
+        }
+        rvalue export_styles(std::vector<Style> &style_vec)
+        {
+            Assert("2D renderer: Normal text object was used for style editing instead of stub one.", internal_stub_object);
+            style_vec = text_styles;
+        }
+        Style &&export_style(int index = -1) // If index is equal to -1, the current style is exported. This discards current text drawing command. It's recommended to use it with stub (null) text and postiton.
+        {
+            Assert("2D renderer: Normal text object was used for style editing instead of stub one.", internal_stub_object);
+            if (index == -1)
+                index = text_cur_style;
+            Assert("2D renderer: Exported text style index is out of range", index >= 0 && index < int(text_styles.size()));
+            return (Style &&)text_styles[index];
+        }
+        std::vector<Style> &&export_styles()
+        {
+            Assert("2D renderer: Normal text object was used for style editing instead of stub one.", internal_stub_object);
+            return (std::vector<Style> &&)text_styles;
+        }
+
+
+        // Style settings
+
+        rvalue font(const Graphics::FontData &ref)
+        {
+            text_styles[text_cur_style].font = &ref;
+            return (rvalue)*this;
+        }
+        rvalue color(fvec3 c)
+        {
+            text_styles[text_cur_style].color = c;
+            return (rvalue)*this;
+        }
+        rvalue alpha(float a)
+        {
+            text_styles[text_cur_style].alpha = a;
+            return (rvalue)*this;
+        }
+        rvalue opacity(float a)
+        {
+            text_styles[text_cur_style].opacity = a;
+            return (rvalue)*this;
+        }
+
         rvalue italic(float tan) // Uses `glyph_matrix()`. `tan` is the italic angle tangent. `0` is the normal text, `1` is 45 degree italic, `+inf` would be 90 degree italic. Negative values are also accepted.
         {
             glyph_matrix({1, -tan, 0, 1});
@@ -474,7 +654,7 @@ class Renderer2D
             if (pixels > 0)
             {
                 spacing(pixels);
-                offset({-pixels/2, 0});
+                glyph_offset({-pixels/2, 0});
                 for (int i = 1; i <= int(pixels); i++)
                     extend({float(i),0});
                 if (pixels != int(pixels))
@@ -496,27 +676,23 @@ class Renderer2D
         }
         rvalue spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
         {
-            text_spacing.x += pixels;
+            text_styles[text_cur_style].spacing.x += pixels;
             return (rvalue)*this;
         }
         rvalue vertical_spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
         {
-            text_spacing.y += pixels;
+            text_styles[text_cur_style].spacing.y += pixels;
             return (rvalue)*this;
         }
-        rvalue matrix(fmat2 m) // This can be called multiple times, resulting in multiplying matrices in the order they were passed.
+
+        rvalue glyph_matrix(fmat2 m) // This can be called multiple times. This matrix is applied after the normal one and doesn't affect relative glyph locations.
         {
-            text_matrix = text_matrix /mul/ m;
+            text_styles[text_cur_style].glyph_matrix = text_styles[text_cur_style].glyph_matrix /mul/ m;
             return (rvalue)*this;
         }
-        rvalue offset(fvec2 o) // This can be called multiple times too. The offset is multiplied by the current matrix.
+        rvalue glyph_offset(fvec2 o) // This can be called multiple times too. The offset is multiplied by the current glyph matrix.
         {
-            position += text_matrix /mul/ o;
-            return (rvalue)*this;
-        }
-        rvalue glyph_matrix(fmat2 m) // This can be called multiple times too. This matrix is applied after the normal one and doesn't affect relative glyph locations.
-        {
-            text_glyph_matrix = text_glyph_matrix /mul/ m;
+            text_styles[text_cur_style].glyph_offset += text_styles[text_cur_style].glyph_matrix /mul/ o;
             return (rvalue)*this;
         }
 
@@ -524,30 +700,30 @@ class Renderer2D
         // They create a copy of the same text with speicified offsets. Shadows are copied too.
         rvalue extend(fvec2 offset)
         {
-            text_duplicate_offsets.push_back(offset);
+            text_styles[text_cur_style].duplicate_offsets.push_back(offset);
             return (rvalue)*this;
         }
         rvalue extend(const std::vector<fvec2> &offsets)
         {
             for (const auto &it : offsets)
-                text_duplicate_offsets.push_back(it);
+                extend(it);
             return (rvalue)*this;
         }
 
         // These affect all text copies and specify a reference frame in which offsets are specified.
         rvalue extend_ref_frame_glyph()
         {
-            text_duplicate_ref_frame = RefFrame::glyph;
+            text_styles[text_cur_style].duplicate_ref_frame = RefFrame::glyph;
             return (rvalue)*this;
         }
         rvalue extend_ref_frame_text()
         {
-            text_duplicate_ref_frame = RefFrame::text;
+            text_styles[text_cur_style].duplicate_ref_frame = RefFrame::text;
             return (rvalue)*this;
         }
         rvalue extend_ref_frame_global()
         {
-            text_duplicate_ref_frame = RefFrame::global;
+            text_styles[text_cur_style].duplicate_ref_frame = RefFrame::global;
             return (rvalue)*this;
         }
 
@@ -555,13 +731,13 @@ class Renderer2D
         // Shadows are drawn front to back.
         rvalue shadow(fvec2 offset)
         {
-            text_shadows.push_back({Shadow::Type::add, offset.to_vec3()});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::add, offset.to_vec3()});
             return (rvalue)*this;
         }
         rvalue shadow(const std::vector<fvec2> &offsets)
         {
             for (const auto &it : offsets)
-                text_shadows.push_back({Shadow::Type::add, it.to_vec3()});
+                shadow(it);
             return (rvalue)*this;
         }
 
@@ -569,188 +745,263 @@ class Renderer2D
         // They affect all shadows created BEFORE they were called.
         rvalue shadow_color(fvec3 c)
         {
-            text_shadows.push_back({Shadow::Type::set_color, c});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::set_color, c});
             return (rvalue)*this;
         }
         rvalue shadow_alpha(float a)
         {
-            text_shadows.push_back({Shadow::Type::set_alpha, {a,0,0}});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::set_alpha, {a,0,0}});
             return (rvalue)*this;
         }
         rvalue shadow_opacity(float o)
         {
-            text_shadows.push_back({Shadow::Type::set_opacity, {o,0,0}});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::set_opacity, {o,0,0}});
             return (rvalue)*this;
         }
 
         // These affect all shadows and specify a reference frame in which offsets are specified.
         rvalue shadow_ref_frame_glyph() // This is the default.
         {
-            text_shadows.push_back({Shadow::Type::mode_glyph, {}});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::mode_glyph, {}});
             return (rvalue)*this;
         }
         rvalue shadow_ref_frame_text()
         {
-            text_shadows.push_back({Shadow::Type::mode_text, {}});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::mode_text, {}});
             return (rvalue)*this;
         }
         rvalue shadow_ref_frame_global()
         {
-            text_shadows.push_back({Shadow::Type::mode_global, {}});
+            text_styles[text_cur_style].shadows.push_back({Shadow::Type::mode_global, {}});
             return (rvalue)*this;
         }
 
-        ~UnfinishedText()
+        ~Text()
         {
-            // Render shadows
+            if (renderer == 0 || internal_stub_object == 1)
+                return;
 
-            fvec3 text_shadow_color = {0,0,0};
-            float text_shadow_alpha = 1;
-            float text_shadow_opacity = 1;
-
-            RefFrame text_shadow_ref_frame = RefFrame::glyph;
-
-            auto text_shadows_copy = text_shadows;
-            text_shadows.clear();
-
-            DEBUG(bool unused_settings = 0;)
-
-            for (auto it = text_shadows_copy.rbegin(); it != text_shadows_copy.rend(); it++)
+            if (internal_temporary_object == 0)
             {
-                switch (it->type)
+                for (auto &it : text_styles)
+                    it.glyph_matrix = text_matrix /mul/ it.glyph_matrix;
+
+                for (auto &it : text_styles)
+                    it.spacing += text_global_spacing;
+
+                text_cur_style = 0;
+
+                int text_final_settings;
                 {
-                  case Shadow::add:
+                    auto iter = std::find_if(text.rbegin(), text.rend(), internal_IsStyleMarker);
+                    if (iter == text.rend())
+                        text_final_settings = 0;
+                    else
+                        text_final_settings = internal_StyleMarkerToIndex(*iter);
+                }
+
+                if (text_alignment.y == 0)
+                    position -= (internal_BaselineHeight(text_styles, text, text_cur_style)) / 2 * text_matrix.y;
+                else if (text_alignment.y > 0)
+                    position -= (internal_BaselineHeight(text_styles, text, text_cur_style) + text_styles[text_final_settings].font->Descent()) * text_matrix.y;
+                else
+                    position += text_styles[text_cur_style].font->Ascent() * text_matrix.y;
+
+                internal_line_pos = position;
+
+                if (text_alignment.x == 0)
+                    position -= (internal_LineWidth(text_styles, text, text_cur_style) + text_styles[text_cur_style].spacing.x) / 2 * text_matrix.x;
+                else if (text_alignment.x > 0)
+                    position -= (internal_LineWidth(text_styles, text, text_cur_style) + text_styles[text_cur_style].spacing.x / 2) * text_matrix.x;
+                else
+                    position -= (text_styles[text_cur_style].spacing.x / 2) * text_matrix.x;
+            }
+
+            // Move shadow vectors to a separate variable. We don't need temporary shadow text objects to have them.
+            std::vector<std::vector<Shadow>> shadows_copy(text_styles.size());
+            for (std::size_t i = 0; i < text_styles.size(); i++)
+                std::swap(text_styles[i].shadows, shadows_copy[i]);
+
+            auto iter = text.begin();
+
+            while (1)
+            {
+                Style &s = text_styles[text_cur_style];
+
+                // Render shadows
+                if (shadows_copy[text_cur_style].size())
+                {
+                    fvec3 tmp_shadow_color = {0,0,0};
+                    float tmp_shadow_alpha = 1;
+                    float tmp_shadow_opacity = 1;
+
+                    RefFrame tmp_shadow_ref_frame = RefFrame::glyph;
+
+                    DEBUG(bool unused_settings = 0;)
+
+                    for (auto it = shadows_copy[text_cur_style].rbegin(); it != shadows_copy[text_cur_style].rend(); it++)
                     {
-                        auto tmp_text = *this;
-                        switch (text_shadow_ref_frame)
+                        switch (it->type)
                         {
-                          case RefFrame::global:
-                            tmp_text.position += it->value.to_vec2();
+                          case Shadow::add:
+                            {
+                                auto tmp_text = *this;
+                                tmp_text.internal_temporary_object = 1;
+                                tmp_text.text.remove_prefix(iter - text.begin());
+                                ivec2 offset;
+                                switch (tmp_shadow_ref_frame)
+                                {
+                                  case RefFrame::global:
+                                    offset = it->value.to_vec2();
+                                    break;
+                                  case RefFrame::text:
+                                    offset = text_matrix /mul/ it->value.to_vec2();
+                                    break;
+                                  case RefFrame::glyph:
+                                    offset = text_matrix /mul/ s.glyph_matrix /mul/ it->value.to_vec2();
+                                    break;
+                                }
+                                tmp_text.position += offset;
+                                tmp_text.internal_line_pos += offset;
+                                tmp_text.text_styles[text_cur_style].color = tmp_shadow_color;
+                                tmp_text.text_styles[text_cur_style].alpha = tmp_shadow_alpha;
+                                tmp_text.text_styles[text_cur_style].opacity = tmp_shadow_opacity;
+                                DEBUG(unused_settings = 0;)
+                            }
                             break;
-                          case RefFrame::text:
-                            tmp_text.position += text_matrix /mul/ it->value.to_vec2();
+                          case Shadow::set_color:
+                            tmp_shadow_color = it->value;
+                            DEBUG(unused_settings = 1;)
                             break;
-                          case RefFrame::glyph:
-                            tmp_text.position += text_matrix /mul/ text_glyph_matrix /mul/ it->value.to_vec2();
+                          case Shadow::set_alpha:
+                            tmp_shadow_alpha = it->value.x;
+                            DEBUG(unused_settings = 1;)
+                            break;
+                          case Shadow::set_opacity:
+                            tmp_shadow_opacity = it->value.x;
+                            DEBUG(unused_settings = 1;)
+                            break;
+                          case Shadow::mode_global:
+                          case Shadow::mode_text:
+                          case Shadow::mode_glyph:
+                            tmp_shadow_ref_frame = (RefFrame)it->type;
+                            DEBUG(unused_settings = 1;)
                             break;
                         }
-                        tmp_text.text_color = text_shadow_color;
-                        tmp_text.text_alpha = text_shadow_alpha;
-                        tmp_text.text_opacity = text_shadow_opacity;
-                        DEBUG(unused_settings = 0;)
                     }
-                    break;
-                  case Shadow::set_color:
-                    text_shadow_color = it->value;
-                    DEBUG(unused_settings = 1;)
-                    break;
-                  case Shadow::set_alpha:
-                    text_shadow_alpha = it->value.x;
-                    DEBUG(unused_settings = 1;)
-                    break;
-                  case Shadow::set_opacity:
-                    text_shadow_opacity = it->value.x;
-                    DEBUG(unused_settings = 1;)
-                    break;
-                  case Shadow::mode_global:
-                  case Shadow::mode_text:
-                  case Shadow::mode_glyph:
-                    text_shadow_ref_frame = (RefFrame)it->type;
-                    DEBUG(unused_settings = 1;)
-                    break;
+                    Assert("2D renderer: Attempt to specify text shadow parameters without an active shadow.", unused_settings == 0);
                 }
-            }
-            Assert("2D renderer: Attempt to specify text shadow parameters without an active shadow.", unused_settings == 0);
 
-
-            // Render copies
-
-            auto text_duplicate_offsets_copy = text_duplicate_offsets;
-            text_duplicate_offsets.clear();
-
-            for (const auto &it : text_duplicate_offsets_copy)
-            {
-                auto tmp_text = *this;
-                switch (text_duplicate_ref_frame)
+                // Render copies
+                if (s.duplicate_offsets.size() > 0)
                 {
-                  case RefFrame::global:
-                    tmp_text.position += it;
-                    break;
-                  case RefFrame::text:
-                    tmp_text.position += text_matrix /mul/ it;
-                    break;
-                  case RefFrame::glyph:
-                    tmp_text.position += text_matrix /mul/ text_glyph_matrix /mul/ it;
-                    break;
+                    // We can't put it outside of the `while` because each shadow needs it's own set of duplicate offsets.
+
+                    std::vector<std::vector<fvec2>> duplicate_offsets_copy(text_styles.size());
+                    for (std::size_t i = 0; i < text_styles.size(); i++)
+                        std::swap(text_styles[i].duplicate_offsets, duplicate_offsets_copy[i]);
+
+                    for (const auto &it : duplicate_offsets_copy[text_cur_style])
+                    {
+                        auto tmp_text = *this;
+                        tmp_text.internal_temporary_object = 1;
+                        tmp_text.text.remove_prefix(iter - text.begin());
+
+                        ivec2 offset;
+                        switch (s.duplicate_ref_frame)
+                        {
+                          case RefFrame::global:
+                            offset = it;
+                            break;
+                          case RefFrame::text:
+                            offset = text_matrix /mul/ it;
+                            break;
+                          case RefFrame::glyph:
+                            offset = text_matrix /mul/ s.glyph_matrix /mul/ it;
+                            break;
+                        }
+                        tmp_text.position += offset;
+                        tmp_text.internal_line_pos += offset;
+                    }
+
+                    for (std::size_t i = 0; i < text_styles.size(); i++)
+                        std::swap(text_styles[i].duplicate_offsets, duplicate_offsets_copy[i]);
                 }
-            }
 
+                // Render the text itself
+                uint16_t prev_ch = 0;
 
-            // Render the text itself
-
-            text_glyph_matrix = text_matrix /mul/ text_glyph_matrix;
-
-            if (text_alignment.y == 0)
-                position -= (text_font->TextHeight(text.begin(), text_spacing.y) - text_font->Height()) / 2 * text_matrix.y;
-            else if (text_alignment.y > 0)
-                position -= (text_font->TextHeight(text.begin(), text_spacing.y) - text_font->Ascent()) * text_matrix.y;
-            else
-                position += text_font->Ascent() * text_matrix.y;
-
-            fvec2 line_pos = position;
-
-            if (text_alignment.x == 0)
-                position -= (text_font->LineWidth(text.begin(), text_spacing.x) + text_spacing.x) / 2 * text_matrix.x;
-            else if (text_alignment.x > 0)
-                position -= (text_font->LineWidth(text.begin(), text_spacing.x) + text_spacing.x) * text_matrix.x;
-
-
-            uint16_t prev_ch = 0;
-
-            for (auto it = text.begin(); it != text.end(); it++)
-            {
-                if (!u8firstbyte(it))
-                    continue;
-                uint16_t ch = u8decode(it);
-                if (!text_font->GlyphExists(ch))
-                    ch = 0;
-
-                if (ch == '\n')
+                for (;; iter++)
                 {
-                    line_pos += text_font->LineSkip() * text_matrix.y;
-                    position = line_pos;
-                    if (text_alignment.x == 0)
-                        position -= (text_font->LineWidth(it+1, text_spacing.x) + text_spacing.x) / 2 * text_matrix.x;
-                    else if (text_alignment.x > 0)
-                        position -= (text_font->LineWidth(it+1, text_spacing.x) + text_spacing.x) * text_matrix.x;
-                    continue;
+                    if (iter == text.end())
+                        return;
+                    if (!u8firstbyte(iter))
+                        continue;
+                    uint16_t ch = u8decode(iter);
+                    if (!s.font->GlyphExists(ch))
+                        ch = 0;
+
+                    if (ch == '\n')
+                    {
+                        internal_line_pos += s.font->LineSkip() * text_matrix.y;
+                        position = internal_line_pos;
+                        if (text_alignment.x == 0)
+                            position -= (internal_LineWidth(text_styles, text.substr(iter - text.begin() + 1), text_cur_style) + s.spacing.x) / 2 * text_matrix.x;
+                        else if (text_alignment.x > 0)
+                            position -= (internal_LineWidth(text_styles, text.substr(iter - text.begin() + 1), text_cur_style) + s.spacing.x / 2) * text_matrix.x;
+                        else
+                            position -= (text_styles[text_cur_style].spacing.x / 2) * text_matrix.x;
+                        prev_ch = u8invalidchar;
+                        continue;
+                    }
+                    else if (internal_IsStyleMarker(ch)) // Style selectors
+                    {
+                        if (internal_temporary_object == 1)
+                            return;
+                        text_cur_style = internal_StyleMarkerToIndex(ch);
+                        prev_ch = u8invalidchar;
+                        break;
+                    }
+                    else
+                    {
+                        const auto &glyph_data = s.font->Glyph(ch);
+
+                        int kerning;
+                        if (prev_ch != u8invalidchar)
+                            kerning = s.font->Kerning(prev_ch, ch);
+                        else
+                            kerning = 0;
+
+                        float center_offset_x = glyph_data.offset.x + glyph_data.size.x / 2.f;
+
+                        position += (kerning + center_offset_x + s.spacing.x / 2) * text_matrix.x;
+
+                        renderer->Sprite(position + (s.glyph_offset + glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size).center().tex(glyph_data.pos, glyph_data.size).color(s.color).mix(0).alpha(s.alpha).opacity(s.opacity).matrix(s.glyph_matrix);
+
+                        position += (glyph_data.advance - center_offset_x + s.spacing.x / 2) * text_matrix.x;
+                    }
+
+                    prev_ch = ch;
                 }
-                else
-                {
-                    const auto &glyph_data = text_font->Glyph(ch);
 
-                    float center_offset_x = glyph_data.offset.x + glyph_data.size.x / 2.f;
-                    position += (text_font->Kerning(prev_ch, ch) + center_offset_x + text_spacing.x / 2) * text_matrix.x;
-
-                    renderer->Sprite(position + (glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size).center().tex(glyph_data.pos, glyph_data.size).color(text_color).mix(0).alpha(text_alpha).opacity(text_opacity).matrix(text_glyph_matrix);
-
-                    position += (glyph_data.advance - center_offset_x + text_spacing.x / 2) * text_matrix.x;
-                }
-
-                prev_ch = ch;
+                iter++;
             }
         }
     };
+    using Text_t = Text; // For cases when `Sprite` conflicts with the function name.
 
-  public:
-    UnfinishedSprite Sprite(fvec2 pos, fvec2 size)
+    Sprite Sprite(fvec2 pos, fvec2 size)
     {
         return {this, pos, size};
     }
 
-    UnfinishedText Text(ivec2 pos, std::string text)
+    Text_t Text(ivec2 pos, std::string text)
     {
         return {this, pos, text};
+    }
+    Text_t Text() // Makes stub object for style editing purposes.
+    {
+        return {this, {0,0}, "", 1};
     }
 };
 

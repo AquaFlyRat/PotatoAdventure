@@ -44,7 +44,7 @@ namespace Strings
         if (str.size())
             str.remove_suffix(str.size() - str.find_last_not_of(chars_to_remove) - 1);
 
-        auto Unprintable = [](char c) {return c < 32 || c == 127;};
+        auto Unprintable = [](char c) {return (c < 32 && c != '\n') || c == 127;};
 
         std::string ret;
         ret.reserve(str.size() + 5*std::count_if(str.begin(), str.end(), Unprintable)); // Sic! `5` is used as the factor, but unprintable chars are replaced with 6 chars.
@@ -72,9 +72,9 @@ namespace Strings
         {
             return (ch & 0b1100'0000) != 0b1000'0000;
         }
-        [[nodiscard]] inline bool u8firstbyte(std::string::const_iterator ch)
+        template <typename Iter> [[nodiscard]] bool u8firstbyte(Iter it)
         {
-            return u8firstbyte(*ch);
+            return u8firstbyte(*it);
         }
 
         [[nodiscard]] inline std::size_t u8strlen(std::string_view str)
@@ -97,12 +97,12 @@ namespace Strings
                     return i;
             return 8;
         }
-        [[nodiscard]] inline std::size_t u8charlen(std::string::const_iterator ch)
+        template <typename Iter> [[nodiscard]] std::size_t u8charlen(Iter it)
         {
-            return u8charlen(*ch);
+            return u8charlen(*it);
         }
 
-        [[nodiscard]] inline uint16_t u8decode(std::string::const_iterator str) // Decodes the first character only. Returns `u8invalidchar` on failure.
+        template <typename Iter> [[nodiscard]] uint16_t u8decode(Iter str) // Decodes the first character only. Returns `u8invalidchar` on failure.
         {
             switch (u8charlen(*str))
             {
