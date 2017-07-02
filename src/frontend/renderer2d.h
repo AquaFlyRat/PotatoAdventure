@@ -976,7 +976,7 @@ class Renderer2D
 
                         position += (kerning + center_offset_x + s.spacing.x / 2) * text_matrix.x;
 
-                        renderer->Sprite(position + (s.glyph_offset + glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size).center().tex(glyph_data.pos, glyph_data.size).color(s.color).mix(0).alpha(s.alpha).opacity(s.opacity).matrix(s.glyph_matrix);
+                        renderer->Sprite(position + s.glyph_offset.x * text_matrix.x + (s.glyph_offset.y + glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size).center().tex(glyph_data.pos, glyph_data.size).color(s.color).mix(0).alpha(s.alpha).opacity(s.opacity).matrix(s.glyph_matrix);
 
                         position += (glyph_data.advance - center_offset_x + s.spacing.x / 2) * text_matrix.x;
                     }
