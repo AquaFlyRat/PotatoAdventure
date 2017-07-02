@@ -49,13 +49,69 @@ namespace Strings
         std::string ret;
         ret.reserve(str.size() + 5*std::count_if(str.begin(), str.end(), Unprintable)); // Sic! `5` is used as the factor, but unprintable chars are replaced with 6 chars.
 
-        (void)Str(std::hex);
+        if (ret.capacity() > str.size())
+            (void)Str(std::hex);
 
         for (char it : str)
         {
             if (Unprintable(it))
             {
                 ret += Str_("<0x", int((unsigned char)it / 16), int((unsigned char)it % 16), '>');
+            }
+            else
+                ret += it;
+        }
+
+        return ret;
+    }
+
+    [[nodiscard]] inline std::string EscapeStr(std::string_view str)
+    {
+        auto EscapeSeq = [](char ch) -> const char *
+        {
+            switch (ch)
+            {
+                case '\a': return "\\a";
+                case '\b': return "\\b";
+                case '\f': return "\\f";
+                case '\n': return "\\n";
+                case '\r': return "\\r";
+                case '\t': return "\\t";
+                case '\v': return "\\v";
+                default: return 0;
+            }
+        };
+
+        std::size_t len = 0;
+
+        for (char it : str)
+        {
+            if (it < 32 || it >= 127)
+            {
+                if (EscapeSeq(it) != 0)
+                    len += 2; // For example, '\a'.
+                else
+                    len += 4; // For example, '\x7f'.
+            }
+            else
+                len++;
+        }
+
+        std::string ret;
+        ret.reserve(len);
+
+        if (len > str.size())
+            (void)Str(std::hex);
+
+        for (char it : str)
+        {
+            if (it < 32 || it >= 127)
+            {
+                auto seq = EscapeSeq(it);
+                if (seq)
+                    ret += seq;
+                else
+                    ret += Str_("\\x", int((unsigned char)it / 16), int((unsigned char)it % 16));
             }
             else
                 ret += it;

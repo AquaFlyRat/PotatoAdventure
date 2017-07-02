@@ -108,6 +108,9 @@ void Main()
             .export_styles();
 
         renderer->Text(screen_size/2, "Hello, world!\nWe have \1colors\r, \2mono\r, \3italic\r, \4bold\r, \5shadows\r, \6sparse\r, and \7this thing\r.\n1234\n#\xcf\x97#").styles(s);
+
+        std::system("pause");
+        Sys::Exit();
     };
 
     while (1)
