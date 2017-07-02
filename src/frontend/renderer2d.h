@@ -781,11 +781,6 @@ class Renderer2D
             if (renderer == 0 || internal_stub_object == 1)
                 return;
 
-            std::cout << "~Text() : ";
-            if (internal_temporary_object)
-                std::cout << "(tmp) ";
-            std::cout << '`' << EscapeStr(text) << "`\n";
-
             if (internal_temporary_object == 0)
             {
                 for (auto &it : text_styles)
@@ -1000,7 +995,7 @@ class Renderer2D
         return {this, pos, size};
     }
 
-    Text_t Text(ivec2 pos, std::string text)
+    Text_t Text(ivec2 pos, std::string_view text)
     {
         return {this, pos, text};
     }
