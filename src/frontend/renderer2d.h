@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "math.h"
 #include "os.h"
+#include "system.h"
 #include "utils.h"
 
 class Renderer2D
@@ -103,7 +104,8 @@ class Renderer2D
         SetColorMatrix(fmat4::identity());
     }
 
-  private:
+
+
     class Sprite
     {
         Sprite(const Sprite &) = delete;
@@ -373,9 +375,8 @@ class Renderer2D
                                            {dst_pos + d, final_colors[3], tex_d, factors[3]});
         }
     };
-
     using Sprite_t = Sprite; // For cases when `Sprite` conflicts with the function name.
-  public:
+
     class Text
     {
         Text(Text &&) = delete;
@@ -391,9 +392,10 @@ class Renderer2D
         fvec2 position;
         std::string_view text;
 
+        float text_alpha = 1;
+
         fmat2 text_matrix = fmat2::identity();
         ivec2 text_alignment = {0,0};
-        fvec2 text_global_spacing = {0,0};
 
       public:
         struct Shadow
@@ -453,19 +455,14 @@ class Renderer2D
             return ch;
         }
 
-        static float internal_LineWidth(const std::vector<Style> &settings, std::string_view str, int state, int *final_state = 0)
+        static float internal_LineWidth(const std::vector<Style> &style_list, std::string_view str, int state, int *final_state = 0)
         {
-            float ret = 0;
+            float ret = -style_list[state].spacing.x / 2;
             uint16_t prev_ch = u8invalidchar;
             for (auto it = str.begin(); it != str.end(); it++)
             {
                 if (*it == '\n')
-                {
-                    prev_ch = u8invalidchar;
-                    if (final_state)
-                        *final_state = state;
                     break;
-                }
                 else if (internal_IsStyleMarker(*it))
                 {
                     state = internal_StyleMarkerToIndex(*it);
@@ -475,30 +472,34 @@ class Renderer2D
                 {
                     if (!u8firstbyte(it))
                         continue;
+                    if (int(u8charlen(it)) > str.end() - it)
+                        Sys::Error("Invalid UTF-8.");
                     uint16_t ch = u8decode(it);
-                    if (!settings[state].font->GlyphExists(ch))
+                    if (!style_list[state].font->GlyphExists(ch))
                         ch = 0;
-                    ret += settings[state].font->Glyph(ch).advance + settings[state].spacing.x;
+                    ret += style_list[state].font->Glyph(ch).advance + style_list[state].spacing.x;
                     if (prev_ch != u8invalidchar)
-                        ret += settings[state].font->Kerning(prev_ch, ch);
+                        ret += style_list[state].font->Kerning(prev_ch, ch);
                     prev_ch = ch;
                 }
             }
-            return ret - settings[state].spacing.x;
+            if (final_state)
+                *final_state = state;
+            return ret - style_list[state].spacing.x / 2;
         }
-        static float internal_BaselineHeight(const std::vector<Style> &settings, std::string_view str, int state, int *final_state = 0)
+        static float internal_BaselineHeight(const std::vector<Style> &style_list, std::string_view str, int state, int *final_state = 0)
         {
             float ret = 0;
             for (char it : str)
             {
                 if (it == '\n')
-                    ret += settings[state].font->LineSkip() + settings[state].spacing.y;
+                    ret += style_list[state].font->LineSkip() + style_list[state].spacing.y;
                 else if (internal_IsStyleMarker(it))
                     state = internal_StyleMarkerToIndex(it);
             }
             if (final_state)
                 *final_state = state;
-            return ret - settings[state].spacing.y;
+            return ret - style_list[state].spacing.y;
         }
 
       public:
@@ -511,20 +512,137 @@ class Renderer2D
 
         // Utilities
 
-        static float LineWidth(const std::vector<Style> &settings, std::string_view str)
+        static float LineWidth(const std::vector<Style> &style_list, std::string_view str)
         {
-            return internal_LineWidth(settings, str, 0);
+            return internal_LineWidth(style_list, str, 0);
         }
-        static float Height(const std::vector<Style> &settings, std::string_view str)
+        static float Height(const std::vector<Style> &style_list, std::string_view str)
         {
             int final_state;
-            float ret = internal_BaselineHeight(settings, str, 0, &final_state);
-            return ret + settings[0].font->Ascent() + settings[final_state].font->Descent();
+            float ret = internal_BaselineHeight(style_list, str, 0, &final_state);
+            return ret + style_list[0].font->Ascent() + style_list[final_state].font->Descent();
         }
+        static std::string InsertLineBreaksToFit(const std::vector<Style> &style_list, std::string_view str, float max_width)
+        {
+            std::string ret;
+            ret.reserve(str.size());
 
+            int state = 0;
+
+            float line_width = -style_list[state].spacing.x / 2;
+
+            uint16_t prev_ch = u8invalidchar;
+
+            int current_line_start = 0;
+
+            auto RemoveTrailingWhitespaces = [&]
+            {
+                std::size_t index = ret.find_last_not_of(' ');
+                if (index == std::string::npos)
+                    ret.clear();
+                else if (index+1 != ret.size())
+                    ret.resize(index+1);
+            };
+            auto NextLine = [&]
+            {
+                prev_ch = u8invalidchar;
+                line_width = -style_list[state].spacing.x / 2;
+                ret += '\n';
+                current_line_start = ret.size();
+            };
+
+            auto it = str.begin();
+            while (it != str.end())
+            {
+                if (!u8firstbyte(it))
+                {
+                    ret += *it;
+                    it++;
+                    continue;
+                }
+
+                if (*it == '\n')
+                {
+                    RemoveTrailingWhitespaces();
+                    NextLine();
+                    it++;
+                }
+                else if (internal_IsStyleMarker(*it))
+                {
+                    state = internal_StyleMarkerToIndex(*it);
+                    prev_ch = u8invalidchar;
+                    ret += *it;
+                    it++;
+                }
+                else
+                {
+                    if (int(u8charlen(it)) > str.end() - it)
+                        std::cout << str.end() - it << "  " << (int)(unsigned char)(*it) << "  " << u8firstbyte(it), Sys::Error("Invalid UTF-8.");
+                    uint16_t ch = u8decode(it);
+                    if (!style_list[state].font->GlyphExists(ch))
+                        ch = 0;
+                    float char_width = style_list[state].font->Glyph(ch).advance + style_list[state].spacing.x;
+                    if (prev_ch != u8invalidchar)
+                        char_width += style_list[state].font->Kerning(prev_ch, ch);
+
+                    if (line_width + char_width + style_list[state].spacing.x / 2 > max_width && current_line_start != int(ret.size()))
+                    {
+                        if (ch == ' ') // If we hit width limit in a middle of a whitespace sequence.
+                        {
+                            RemoveTrailingWhitespaces();
+                            it++;
+                            while (it != str.end() && *it == ' ')
+                                it++;
+                            if (it != str.end())
+                                NextLine();
+                            if (it != str.end() && *it == '\n')
+                                it++;
+                        }
+                        else // If we hit width limit in a middle of a word.
+                        {
+                            std::string_view line_view = ret;
+                            line_view.remove_prefix(current_line_start);
+
+                            std::size_t space_index = line_view.find_last_of(" ");
+
+                            if (space_index == std::string::npos) // If there are no whitespaces in this line to turn into line feeds.
+                            {
+                                RemoveTrailingWhitespaces();
+                                NextLine();
+                            }
+                            else // If there is a whitespace in this line to turn into a line feed.
+                            {
+                                while (space_index > 0 && line_view[space_index-1] == ' ')
+                                    space_index--;
+                                ret.resize(current_line_start + space_index);
+                                NextLine();
+                                it -= line_view.size() - space_index;
+                                while (it != str.end() && *it == ' ')
+                                    it++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ret += *it;
+                        line_width += char_width;
+                        prev_ch = ch;
+                        it++;
+                    }
+                }
+            }
+            RemoveTrailingWhitespaces();
+            ret.shrink_to_fit();
+            return ret;
+        }
 
         // Style-independent settings
 
+        rvalue global_alpha(float a)
+        {
+            text_alpha = a;
+            return (rvalue)*this;
+        }
         rvalue align_h(int a)
         {
             text_alignment.x = a;
@@ -550,14 +668,20 @@ class Renderer2D
             text_matrix = text_matrix /mul/ m;
             return (rvalue)*this;
         }
+
+        // Those change spacing for all styles simultaneously.
         rvalue global_spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
         {
-            text_global_spacing.x += pixels;
+            for (auto &it : text_styles)
+                if (it.was_initialized)
+                    it.spacing.x += pixels;
             return (rvalue)*this;
         }
         rvalue global_vertical_spacing(float pixels) // Negative values are allowed, but don't work well. The function can be called multiple times, accumulating the value.
         {
-            text_global_spacing.y += pixels;
+            for (auto &it : text_styles)
+                if (it.was_initialized)
+                    it.spacing.y += pixels;
             return (rvalue)*this;
         }
 
@@ -784,10 +908,10 @@ class Renderer2D
             if (internal_temporary_object == 0)
             {
                 for (auto &it : text_styles)
+                {
                     it.glyph_matrix = text_matrix /mul/ it.glyph_matrix;
-
-                for (auto &it : text_styles)
-                    it.spacing += text_global_spacing;
+                    it.alpha *= text_alpha;
+                }
 
                 text_cur_style = 0;
 
@@ -864,7 +988,7 @@ class Renderer2D
                                 tmp_text.position += offset;
                                 tmp_text.internal_line_pos += offset;
                                 tmp_text.text_styles[text_cur_style].color = tmp_shadow_color;
-                                tmp_text.text_styles[text_cur_style].alpha = tmp_shadow_alpha;
+                                tmp_text.text_styles[text_cur_style].alpha = tmp_shadow_alpha * text_alpha;
                                 tmp_text.text_styles[text_cur_style].opacity = tmp_shadow_opacity;
                                 DEBUG(unused_settings = 0;)
                             }
@@ -929,7 +1053,7 @@ class Renderer2D
                 }
 
                 // Render the text itself
-                uint16_t prev_ch = 0;
+                uint16_t prev_ch = u8invalidchar;
 
                 for (;; iter++)
                 {
@@ -937,6 +1061,8 @@ class Renderer2D
                         return;
                     if (!u8firstbyte(iter))
                         continue;
+                    if (int(u8charlen(iter)) > text.end() - iter)
+                        Sys::Error("Invalid UTF-8.");
                     uint16_t ch = u8decode(iter);
                     if (!s.font->GlyphExists(ch))
                         ch = 0;
@@ -995,7 +1121,7 @@ class Renderer2D
         return {this, pos, size};
     }
 
-    Text_t Text(ivec2 pos, std::string_view text)
+    Text_t Text(fvec2 pos, std::string_view text)
     {
         return {this, pos, text};
     }

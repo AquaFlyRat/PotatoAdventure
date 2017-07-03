@@ -49,8 +49,7 @@ namespace Strings
         std::string ret;
         ret.reserve(str.size() + 5*std::count_if(str.begin(), str.end(), Unprintable)); // Sic! `5` is used as the factor, but unprintable chars are replaced with 6 chars.
 
-        if (ret.capacity() > str.size())
-            (void)Str(std::hex);
+        (void)Str(std::hex);
 
         for (char it : str)
         {
@@ -100,8 +99,7 @@ namespace Strings
         std::string ret;
         ret.reserve(len);
 
-        if (len > str.size())
-            (void)Str(std::hex);
+        (void)Str(std::hex);
 
         for (char it : str)
         {
@@ -149,7 +147,7 @@ namespace Strings
             if (!u8firstbyte(ch))
                 return 0;
             for (int i = 1; i < 8; i++)
-                if (((ch & (0xff00 >> (i+1))) ^ ((0xff00 >> i) & 0xff)) == 0)
+                if ((((ch & (0xff00 >> (i+1))) ^ (0xff00 >> i)) & 0xff) == 0)
                     return i;
             return 8;
         }
@@ -167,9 +165,9 @@ namespace Strings
               case 1:
                 return *str;
               case 2:
-                return (*str << 6) | (str[1] & 0b0011'1111);
+                return ((*str & 0b0001'1111) << 6) | (str[1] & 0b0011'1111);
               case 3:
-                return (*str << 12) | ((str[1] & 0b0011'1111) << 6) | (str[2] & 0b0011'1111);
+                return ((*str & 0b0000'1111) << 12) | ((str[1] & 0b0011'1111) << 6) | (str[2] & 0b0011'1111);
             }
         }
     }
