@@ -80,7 +80,8 @@ namespace GUI
     {
         std::string str = Renderer2D::Text::InsertLineBreaksToFit(main_font_style_vec, line, Cfg::log_text_width);
 
-        std::string::iterator it = str.begin(), word_start = str.begin();
+        char *it = str.data();
+        const char *word_start = str.c_str();
         while (1)
         {
             bool end = 0;
@@ -92,9 +93,9 @@ namespace GUI
 
             if (*it == '\0')
             {
-                log_queue.emplace_back(&*word_start);
+                log_queue.emplace_back(word_start);
                 if (!end)
-                word_start = it+1;
+                    word_start = it+1;
             }
 
             if (end)
