@@ -92,8 +92,9 @@ void Main()
         renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 30.0));
         float angle = Sys::TickCounter() % 200 / float(200) * f_pi * 2;
         renderer->Sprite(ivec2(fmat2::rotate2D(angle) /mul/ fvec2(0,64)) + screen_size / 2, {32,32}).tex({0,0}).center().angle(-angle);
-        renderer->Sprite({float(Input::MousePos().x), 0}, {1,screen_size.y}).color({0.5,0,0});
-        renderer->Sprite({float(screen_size.x-Input::MousePos().x-2), 0}, {1,screen_size.y}).color({0.5,0,0});
+
+        renderer->Sprite({float(Input::MousePos().x), 0}, {1,(float)screen_size.y}).color({0.5,0,0});
+        renderer->Sprite({float(screen_size.x-Input::MousePos().x-2), 0}, {1,(float)screen_size.y}).color({0.5,0,0});
 
         /*
         renderer->Text(screen_size/2, "Hello, world!\nWe have \1colors\r, \2mono\r, \3italic\r, \4bold\r, \5shadows\r, \6sparse\r, and \7this thing\r.\n1234\n#\xcf\x97#")
