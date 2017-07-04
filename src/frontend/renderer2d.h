@@ -394,6 +394,8 @@ class Renderer2D
 
         float text_alpha = 1;
 
+        float text_char_count = -1;
+
         fmat2 text_matrix = fmat2::identity();
         ivec2 text_alignment = {0,0};
 
@@ -435,9 +437,11 @@ class Renderer2D
             std::vector<Shadow> shadows;
         };
 
+        using StyleVector = std::vector<Style>;
+
       private:
         int text_cur_style = 0;
-        std::vector<Style> text_styles = {{1}};
+        StyleVector text_styles = {{1}};
 
         bool internal_temporary_object = 0; // Used by shadows and `extend()`ed copies.
         fvec2 internal_line_pos;
@@ -455,7 +459,7 @@ class Renderer2D
             return ch;
         }
 
-        static float internal_LineWidth(const std::vector<Style> &style_list, std::string_view str, int state, int *final_state = 0)
+        static float internal_LineWidth(const StyleVector &style_list, std::string_view str, int state, int *final_state = 0)
         {
             float ret = -style_list[state].spacing.x / 2;
             uint16_t prev_ch = u8invalidchar;
@@ -487,7 +491,7 @@ class Renderer2D
                 *final_state = state;
             return ret - style_list[state].spacing.x / 2;
         }
-        static float internal_BaselineHeight(const std::vector<Style> &style_list, std::string_view str, int state, int *final_state = 0)
+        static float internal_BaselineHeight(const StyleVector &style_list, std::string_view str, int state, int *final_state = 0)
         {
             float ret = 0;
             for (char it : str)
@@ -512,17 +516,27 @@ class Renderer2D
 
         // Utilities
 
-        static float LineWidth(const std::vector<Style> &style_list, std::string_view str)
+        static float LineWidth(const StyleVector &style_list, std::string_view str)
         {
             return internal_LineWidth(style_list, str, 0);
         }
-        static float Height(const std::vector<Style> &style_list, std::string_view str)
+        static float Height(const StyleVector &style_list, std::string_view str)
         {
             int final_state;
             float ret = internal_BaselineHeight(style_list, str, 0, &final_state);
             return ret + style_list[0].font->Ascent() + style_list[final_state].font->Descent();
         }
-        static std::string InsertLineBreaksToFit(const std::vector<Style> &style_list, std::string_view str, float max_width)
+        static int VisibleCharCount(std::string_view str)
+        {
+            int ret = 0;
+            for (char it : str)
+            {
+                if (u8firstbyte(it) && it != '\n' && !internal_IsStyleMarker(it))
+                    ret++;
+            }
+            return ret;
+        }
+        static std::string InsertLineBreaksToFit(const StyleVector &style_list, std::string_view str, float max_width)
         {
             std::string ret;
             ret.reserve(str.size());
@@ -657,6 +671,14 @@ class Renderer2D
             text_alignment.y = a;
             return (rvalue)*this;
         }
+        // Limits the amount of rendered characters (excluding line breaks and style markers).
+        // If the parameter is not integral, there will be `ceil(count)` chars and the last one of them will have its alpha multiplied by `frac(count)`.
+        // The default value is `-1` and means no limit on character count.
+        rvalue character_count(float count)
+        {
+            text_char_count = count;
+            return (rvalue)*this;
+        }
         rvalue scale(float s) // Uses `matrix()`.
         {
             matrix(fmat2::scale2D(s));
@@ -715,7 +737,7 @@ class Renderer2D
             text_styles[index] = style;
             return (rvalue)*this;
         }
-        rvalue styles(const std::vector<Style> &style_vec) // This overwrites all styles.
+        rvalue styles(const StyleVector &style_vec) // This overwrites all styles.
         {
             text_styles = style_vec;
             return (rvalue)*this;
@@ -729,7 +751,7 @@ class Renderer2D
             style = text_styles[index];
             return (rvalue)*this;
         }
-        rvalue export_styles(std::vector<Style> &style_vec)
+        rvalue export_styles(StyleVector &style_vec)
         {
             Assert("2D renderer: Normal text object was used for style editing instead of stub one.", internal_stub_object);
             style_vec = text_styles;
@@ -742,10 +764,10 @@ class Renderer2D
             Assert("2D renderer: Exported text style index is out of range", index >= 0 && index < int(text_styles.size()));
             return (Style &&)text_styles[index];
         }
-        std::vector<Style> &&export_styles()
+        StyleVector &&export_styles()
         {
             Assert("2D renderer: Normal text object was used for style editing instead of stub one.", internal_stub_object);
-            return (std::vector<Style> &&)text_styles;
+            return (StyleVector &&)text_styles;
         }
 
 
@@ -1106,7 +1128,21 @@ class Renderer2D
 
                         position += (kerning + center_offset_x + s.spacing.x / 2) * text_matrix.x;
 
-                        renderer->Sprite(position + s.glyph_offset.x * text_matrix.x + (s.glyph_offset.y + glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size).center().tex(glyph_data.pos, glyph_data.size).color(s.color).mix(0).alpha(s.alpha).opacity(s.opacity).matrix(s.glyph_matrix);
+                        bool stop = 0;
+
+                        renderer->Sprite(position + s.glyph_offset.x * text_matrix.x + (s.glyph_offset.y + glyph_data.offset.y + glyph_data.size.y / 2.f) * text_matrix.y, glyph_data.size)
+                            .center()
+                            .tex(glyph_data.pos, glyph_data.size)
+                            .color(s.color)
+                            .mix(0)
+                            .alpha(text_char_count < -0.5f ? s.alpha                         : // If no char count limit.
+                                   text_char_count > 1     ? (text_char_count -= 1, s.alpha) : // If current char is not the last one.
+                                   (stop = 1, s.alpha * text_char_count)) // If current char is the last one.
+                            .opacity(s.opacity)
+                            .matrix(s.glyph_matrix);
+
+                        if (stop)
+                            return;
 
                         position += (glyph_data.advance - center_offset_x + s.spacing.x / 2) * text_matrix.x;
                     }
