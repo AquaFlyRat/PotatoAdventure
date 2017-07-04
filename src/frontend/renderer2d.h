@@ -535,6 +535,8 @@ class Renderer2D
 
             int current_line_start = 0;
 
+            bool word_found_on_this_line = 0;
+
             auto RemoveTrailingWhitespaces = [&]
             {
                 std::size_t index = ret.find_last_not_of(' ');
@@ -549,6 +551,7 @@ class Renderer2D
                 line_width = -style_list[state].spacing.x / 2;
                 ret += '\n';
                 current_line_start = ret.size();
+                word_found_on_this_line = 0;
             };
 
             auto it = str.begin();
@@ -577,7 +580,7 @@ class Renderer2D
                 else
                 {
                     if (int(u8charlen(it)) > str.end() - it)
-                        std::cout << str.end() - it << "  " << (int)(unsigned char)(*it) << "  " << u8firstbyte(it), Sys::Error("Invalid UTF-8.");
+                        Sys::Error("Invalid UTF-8.");
                     uint16_t ch = u8decode(it);
                     if (!style_list[state].font->GlyphExists(ch))
                         ch = 0;
@@ -585,7 +588,7 @@ class Renderer2D
                     if (prev_ch != u8invalidchar)
                         char_width += style_list[state].font->Kerning(prev_ch, ch);
 
-                    if (line_width + char_width + style_list[state].spacing.x / 2 > max_width && current_line_start != int(ret.size()))
+                    if (line_width + char_width + style_list[state].spacing.x / 2 > max_width && word_found_on_this_line)
                     {
                         if (ch == ' ') // If we hit width limit in a middle of a whitespace sequence.
                         {
@@ -628,6 +631,7 @@ class Renderer2D
                         line_width += char_width;
                         prev_ch = ch;
                         it++;
+                        word_found_on_this_line = 1;
                     }
                 }
             }
