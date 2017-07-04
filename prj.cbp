@@ -151,6 +151,7 @@
 		<Unit filename="src/frontend/lib/sdlttf.h" />
 		<Unit filename="src/frontend/lib/vorbis.h" />
 		<Unit filename="src/frontend/lib/z.h" />
+		<Unit filename="src/frontend/logic/gui.h" />
 		<Unit filename="src/frontend/logic/main.cpp" />
 		<Unit filename="src/frontend/master.h" />
 		<Unit filename="src/frontend/math.h" />

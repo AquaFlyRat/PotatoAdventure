@@ -1,5 +1,9 @@
 #include "../master.h"
 
+#include "gui.h"
+
+#include <deque>
+#include <vector>
 
 namespace Backend
 {
@@ -15,6 +19,15 @@ void Main();
 static int window_scale = 2;
 static constexpr ivec2 screen_size(480,270);
 
+namespace Cfg
+{
+    static constexpr int log_x = 146, log_width = 334,
+                         log_text_margin_bottom = 34, log_text_margin_left = 8, log_text_margin_right = 8,
+                         log_text_width = log_width - log_text_margin_left - log_text_margin_right;
+
+    static constexpr float log_text_typing_speed = 0.2,
+                           log_text_insertion_offset_pixel_speed = 0.25, log_text_insertion_offset_frac_change_per_frame = 0.025;
+}
 
 
 void PreInit()
@@ -36,6 +49,61 @@ static Graphics::Font main_font_obj;
 static Graphics::Font mono_font_obj;
 static Graphics::FontData main_font;
 static Graphics::FontData mono_font;
+static Renderer2D::Text::StyleVector main_font_style_vec;
+
+static std::vector<std::string> log_lines;
+static std::deque<std::string> log_queue;
+static float log_tmp_offset_y = 0;
+static float log_queue_current_str_pos = 0;
+static int log_queue_front_visible_char_count = -1;
+
+static int log_position = 0;
+
+namespace GUI
+{
+    Renderer2D &Renderer() {return *renderer;}
+
+    namespace Fonts
+    {
+        const Graphics::FontData &Main() {return main_font;}
+        const Graphics::FontData &Mono() {return mono_font;}
+    }
+
+    namespace FontStyleVectors
+    {
+        const Renderer2D::Text::StyleVector &Main() {return main_font_style_vec;}
+    }
+
+
+
+    void WriteLine(std::string_view line) // Line feed is automatically added at the end.
+    {
+        std::string str = Renderer2D::Text::InsertLineBreaksToFit(main_font_style_vec, line, Cfg::log_text_width);
+
+        std::string::iterator it = str.begin(), word_start = str.begin();
+        while (1)
+        {
+            bool end = 0;
+
+            if (*it == '\n')
+                *it = '\0';
+            else if (*it == '\0')
+                end = 1;
+
+            if (*it == '\0')
+            {
+                log_queue.emplace_back(&*word_start);
+                if (!end)
+                word_start = it+1;
+            }
+
+            if (end)
+                return;
+
+            it++;
+        }
+    }
+}
 
 void Resize()
 {
@@ -65,6 +133,13 @@ void Boot()
     renderer->UseMouseMapping(1);
     renderer->EnableShader();
 
+
+    main_font_style_vec = renderer->Text()
+        .color({1,1,1})
+        .configure_style(1).bold_aligned(1)
+        .configure_style(2).italic(0.25)
+        .export_styles();
+
     Sys::SetCurrentFunction(Main);
 }
 
@@ -74,54 +149,58 @@ void Main()
 
     auto Tick = [&]
     {
+        if (log_queue.empty())
+            Backend::Tick();
 
+        // Updating rendering queue
+        if (log_queue.size())
+        {
+
+            if (log_queue_front_visible_char_count == -1)
+                log_queue_front_visible_char_count = Renderer2D::Text::VisibleCharCount(log_queue.front());
+
+            if (log_queue_current_str_pos > log_queue_front_visible_char_count)
+            {
+                log_lines.emplace_back((std::string &&)log_queue.front());
+                log_queue.pop_front();
+                log_tmp_offset_y += 1;
+                log_queue_current_str_pos = 0;
+                log_queue_front_visible_char_count = -1;
+            }
+            else
+                log_queue_current_str_pos += Cfg::log_text_typing_speed;
+        }
+        if (log_tmp_offset_y > 0)
+        {
+            log_tmp_offset_y -= log_tmp_offset_y * Cfg::log_text_insertion_offset_frac_change_per_frame + Cfg::log_text_insertion_offset_pixel_speed/main_font.LineSkip();
+            if (log_tmp_offset_y < 0)
+                log_tmp_offset_y = 0;
+        }
+
+        "Remove me later plz"; if (Input::KeyPressed(Input::Key_Space())) GUI::WriteLine("Meow meow!");
     };
     auto Render = [&]
     {
-        static constexpr const char *lorem_ipsum =
-"\4Lorem ipsum\r dolor sit amet, consectetur adipisicing elit, "
-"sed do eiusmod tempor incididunt ut \4labore\r et dolore magna aliqua. "
-"Ut enim ad minim veniam, quis nostrud exercitation ullamco "
-"laboris nisi ut \4aliquip\r ex ea commodo consequat. Duis aute irure "
-"dolor in reprehenderit in voluptate velit esse cillum dolore eu "
-"fugiat nulla pariatur. \4Excepteur\r sint occaecat cupidatat non "
-"proident, sunt in culpa qui officia deserunt \4mollit\r anim id est laborum.";
-
         Graphics::Clear();
 
-        renderer->SetColorMatrix(fmat4::rotate({1,1,1}, Sys::TickCounter() / 30.0));
-        float angle = Sys::TickCounter() % 200 / float(200) * f_pi * 2;
-        renderer->Sprite(ivec2(fmat2::rotate2D(angle) /mul/ fvec2(0,64)) + screen_size / 2, {32,32}).tex({0,0}).center().angle(-angle);
-        renderer->Sprite({float(Input::MousePos().x), 0}, {1,screen_size.y}).color({0.5,0,0});
-        renderer->Sprite({float(screen_size.x-Input::MousePos().x-2), 0}, {1,screen_size.y}).color({0.5,0,0});
+        // This separates log from map and stats;
+        renderer->Sprite({float(Cfg::log_x), 0}, {1,screen_size.y}).color({0.5,0.5,0.5});
 
-        /*
-        renderer->Text(screen_size/2, "Hello, world!\nWe have \1colors\r, \2mono\r, \3italic\r, \4bold\r, \5shadows\r, \6sparse\r, and \7this thing\r.\n1234\n#\xcf\x97#")
-            .color({1,1,1})
-            .configure_style(1).color({0,0,1})
-            .configure_style(2).font(mono_font)
-            .configure_style(3).italic(.25)
-            .configure_style(4).bold_aligned(1)
-            .configure_style(5).shadow({1,1}).shadow_color({0.75,0.25,0.25})
-            .configure_style(6).spacing(3)
-            .configure_style(7).glyph_matrix(fmat2::rotate2D(f_pi));
-        */
+        // Log lines
+        if (log_lines.size())
+        {
+            for (int i = 0; Cfg::log_text_margin_bottom + main_font.LineSkip()*(i-1) < screen_size.y && i + log_position / main_font.LineSkip() < int(log_lines.size()); i++)
+                renderer->Text(fvec2(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y))), log_lines[log_lines.size() - 1 - i - log_position / main_font.LineSkip()])
+                    .styles(main_font_style_vec)
+                    .align_h(-1).align_v(-1);
+        }
 
-        auto s = renderer->Text()
-            .color({1,1,1})
-            .configure_style(1).color({0,0,1})
-            .configure_style(2).font(mono_font)
-            .configure_style(3).italic(.25)
-            .configure_style(4).bold_aligned(1)
-            .configure_style(5).shadow({1,1}).shadow_color({0.75,0.25,0.25})
-            .configure_style(6).spacing(3)
-            .configure_style(7).glyph_matrix(fmat2::rotate2D(f_pi))
-            .export_styles();
-
-        //renderer->Text(screen_size/2, "Hello, world!\nWe have \1colors\r, \2mono\r, \3italic\r, \4bold\r, \5shadows\r, \6sparse\r, and \7this thing\r.\n1234\n#\xcf\x97#").styles(s).global_alpha(Input::MousePos().x / 100.f - 1);
-        int w = 2*std::max(Input::MousePos().x - screen_size.x/2, 0);
-        std::string tmp = Renderer2D::Text::InsertLineBreaksToFit(s, lorem_ipsum, w);
-        renderer->Text({float(screen_size.x/2), 0}, tmp).styles(s).align_v(-1);
+        // Current unfinished line
+        if (log_queue.size())
+            renderer->Text(fvec2(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom + main_font.LineSkip() * log_tmp_offset_y)), log_queue.front())
+                .styles(main_font_style_vec)
+                .align_h(-1).align_v(-1)
+                .character_count(log_queue_current_str_pos);
     };
 
     while (1)
@@ -131,7 +210,6 @@ void Main()
         while (ts.Tick())
         {
             Sys::Tick();
-            Backend::Tick();
             Tick();
         }
 
