@@ -90,6 +90,9 @@
     <ClCompile Include="..\src\backend\gen\world.cpp">
       <Filter>Source Files\Backend\Gen</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\backend\gen\race.cpp">
+      <Filter>Source Files\Backend\Gen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\frontend\lib\al.h">
@@ -183,6 +186,12 @@
       <Filter>Header Files\Backend</Filter>
     </ClInclude>
     <ClInclude Include="..\src\backend\gen\entity_names_gen.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\race.h">
+      <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gen\generated.h">
       <Filter>Header Files\Backend\Gen</Filter>
     </ClInclude>
   </ItemGroup>

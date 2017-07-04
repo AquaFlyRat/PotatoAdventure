@@ -25,6 +25,7 @@
     <ClCompile Include="..\src\backend\gen\city.cpp" />
     <ClCompile Include="..\src\backend\gen\city_generator.cpp" />
     <ClCompile Include="..\src\backend\gen\gen_config.cpp" />
+    <ClCompile Include="..\src\backend\gen\race.cpp" />
     <ClCompile Include="..\src\backend\gen\world.cpp" />
     <ClCompile Include="..\src\frontend\audio.cpp" />
     <ClCompile Include="..\src\frontend\graphics.cpp" />
@@ -43,7 +44,9 @@
     <ClInclude Include="..\src\backend\gen\city.h" />
     <ClInclude Include="..\src\backend\gen\city_generator.h" />
     <ClInclude Include="..\src\backend\gen\entity_names_gen.h" />
+    <ClInclude Include="..\src\backend\gen\generated.h" />
     <ClInclude Include="..\src\backend\gen\gen_config.h" />
+    <ClInclude Include="..\src\backend\gen\race.h" />
     <ClInclude Include="..\src\backend\gen\text.h" />
     <ClInclude Include="..\src\backend\gen\world.h" />
     <ClInclude Include="..\src\backend\gen\world_generator.h" />
