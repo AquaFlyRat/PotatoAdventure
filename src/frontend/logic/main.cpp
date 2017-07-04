@@ -185,7 +185,7 @@ void Main()
         Graphics::Clear();
 
         // This separates log from map and stats;
-        renderer->Sprite({float(Cfg::log_x), 0}, {1,screen_size.y}).color({0.5,0.5,0.5});
+        renderer->Sprite({float(Cfg::log_x), 0}, {1,(float)screen_size.y}).color({0.5,0.5,0.5});
 
         // Log lines
         if (log_lines.size())
