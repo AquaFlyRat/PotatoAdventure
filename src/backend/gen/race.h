@@ -13,6 +13,8 @@ namespace Backend
 		std::string GenerateName();
 	public:
 		virtual void Generate();
+
+		inline const std::string& Name() const { return name; }
 	};
 }
 
