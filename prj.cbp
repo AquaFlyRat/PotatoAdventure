@@ -129,6 +129,9 @@
 		<Unit filename="src/backend/gen/entity_names_gen.h" />
 		<Unit filename="src/backend/gen/gen_config.cpp" />
 		<Unit filename="src/backend/gen/gen_config.h" />
+		<Unit filename="src/backend/gen/generated.h" />
+		<Unit filename="src/backend/gen/race.cpp" />
+		<Unit filename="src/backend/gen/race.h" />
 		<Unit filename="src/backend/gen/text.h" />
 		<Unit filename="src/backend/gen/world.cpp" />
 		<Unit filename="src/backend/gen/world.h" />

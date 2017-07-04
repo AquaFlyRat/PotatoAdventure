@@ -10,4 +10,4 @@ namespace Backend
 	};
 }
 
-#endif GENERATED_INCLUDED_
+#endif
