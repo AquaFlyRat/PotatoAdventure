@@ -50,6 +50,7 @@
     <ClInclude Include="..\src\backend\gen\text.h" />
     <ClInclude Include="..\src\backend\gen\world.h" />
     <ClInclude Include="..\src\backend\gen\world_generator.h" />
+    <ClInclude Include="..\src\backend\gui_api.h" />
     <ClInclude Include="..\src\frontend\audio.h" />
     <ClInclude Include="..\src\frontend\exceptions.h" />
     <ClInclude Include="..\src\frontend\graphics.h" />
@@ -64,6 +65,7 @@
     <ClInclude Include="..\src\frontend\lib\sdlttf.h" />
     <ClInclude Include="..\src\frontend\lib\vorbis.h" />
     <ClInclude Include="..\src\frontend\lib\z.h" />
+    <ClInclude Include="..\src\frontend\logic\gui.h" />
     <ClInclude Include="..\src\frontend\master.h" />
     <ClInclude Include="..\src\frontend\math.h" />
     <ClInclude Include="..\src\frontend\network.h" />

@@ -14,6 +14,5 @@ namespace Backend
     {
         WorldGenerator worldGen;
         World* world = worldGen.GenerateWorld();
-        (void)world;// printf("%i\n", world->GetCitys().size());
     }
 }

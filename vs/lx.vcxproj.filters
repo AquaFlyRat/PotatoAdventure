@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Backend\Gen">
       <UniqueIdentifier>{6df2c1cd-be60-4fb6-b867-fa58af9823a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Frontend\Logic">
+      <UniqueIdentifier>{cc60aa07-7a87-43b6-a4b0-f0bd5518e4e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\getopt.c">
@@ -193,6 +196,12 @@
     </ClInclude>
     <ClInclude Include="..\src\backend\gen\generated.h">
       <Filter>Header Files\Backend\Gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\frontend\logic\gui.h">
+      <Filter>Header Files\Frontend\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\backend\gui_api.h">
+      <Filter>Header Files\Backend</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

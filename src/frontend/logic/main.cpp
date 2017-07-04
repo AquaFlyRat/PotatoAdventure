@@ -25,7 +25,7 @@ namespace Cfg
                          log_text_margin_bottom = 34, log_text_margin_left = 8, log_text_margin_right = 8,
                          log_text_width = log_width - log_text_margin_left - log_text_margin_right;
 
-    static constexpr float log_text_typing_speed = 0.2,
+    static constexpr float log_text_typing_speed = 0.4,
                            log_text_insertion_offset_pixel_speed = 0.25, log_text_insertion_offset_frac_change_per_frame = 0.025;
 }
 
@@ -79,7 +79,6 @@ namespace GUI
     void WriteLine(std::string_view line) // Line feed is automatically added at the end.
     {
         std::string str = Renderer2D::Text::InsertLineBreaksToFit(main_font_style_vec, line, Cfg::log_text_width);
-
         char *it = str.data();
         const char *word_start = str.c_str();
         while (1)
@@ -191,17 +190,22 @@ void Main()
         if (log_lines.size())
         {
             for (int i = 0; Cfg::log_text_margin_bottom + main_font.LineSkip()*(i-1) < screen_size.y && i + log_position / main_font.LineSkip() < int(log_lines.size()); i++)
-                renderer->Text(fvec2(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y))), log_lines[log_lines.size() - 1 - i - log_position / main_font.LineSkip()])
+            {
+                fvec2 line_pos(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y)));
+                renderer->Text(line_pos, log_lines[log_lines.size() - 1 - i - log_position / main_font.LineSkip()])
                     .styles(main_font_style_vec)
                     .align_h(-1).align_v(-1);
+            }
         }
 
         // Current unfinished line
         if (log_queue.size())
+        {
             renderer->Text(fvec2(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom + main_font.LineSkip() * log_tmp_offset_y)), log_queue.front())
                 .styles(main_font_style_vec)
                 .align_h(-1).align_v(-1)
                 .character_count(log_queue_current_str_pos);
+        }
     };
 
     while (1)

@@ -67,7 +67,6 @@ namespace Audio
     void Initialize()
     {
         ExecuteThisOnce();
-
         static constexpr int needed_openal_major = 1, needed_openal_minor = 1; // 1.1
 
         device = alcOpenDevice(0);
