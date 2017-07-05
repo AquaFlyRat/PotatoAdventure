@@ -74,8 +74,6 @@ namespace GUI
         const Renderer2D::Text::StyleVector &Main() {return main_font_style_vec;}
     }
 
-
-
     void WriteLine(std::string_view line) // Line feed is automatically added at the end.
     {
         std::string str = Renderer2D::Text::InsertLineBreaksToFit(main_font_style_vec, line, Cfg::log_text_width);
@@ -177,7 +175,7 @@ void Main()
                 log_tmp_offset_y = 0;
         }
 
-        "Remove me later plz"; if (Input::KeyPressed(Input::Key_Space())) GUI::WriteLine("Meow meow!");
+        //if (Input::KeyPressed(Input::Key_Space())) GUI::WriteLine("Meow meow!");
     };
     auto Render = [&]
     {

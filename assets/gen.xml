@@ -106,6 +106,7 @@
         <Text>Forge</Text>
         <Text>Smithy</Text>			
       </TextSection>
+      
     </NameSection>
 	
 	<NamesInfo name="tmp">
@@ -148,4 +149,7 @@
   <CityData>
     <CityNumberRange min="5" max="10"></CityNumberRange>
   </CityData>
+
+  <RaceData>
+  </RaceData>
 </GenData>
