@@ -138,13 +138,13 @@ void Boot()
 
 
     main_font_style_vec = renderer->Text()
-        .color({1,1,1})
-        .shadow({1,1}).shadow_color({0.1,0.1,0.1})
+        .color({1.f,1.f,1.f})
+        .shadow({1.f,1.f}).shadow_color({0.1f,0.1f,0.1f})
         .configure_style(1).bold_aligned(1)
-        .configure_style(2).italic(0.25)
-        .configure_style(3).color({0.2,1,0.2})
-        .configure_style(4).color({1,1,0.2})
-        .configure_style(5).color({1,0.2,0.2})
+        .configure_style(2).italic(0.25f)
+        .configure_style(3).color({0.2f,1,0.2f})
+        .configure_style(4).color({1,1,0.2f})
+        .configure_style(5).color({1,0.2f,0.2f})
         .export_styles();
 
     Sys::SetCurrentFunction(Main);
