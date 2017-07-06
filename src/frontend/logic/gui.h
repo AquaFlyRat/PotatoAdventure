@@ -5,6 +5,8 @@
 
 namespace GUI
 {
+    // Low level
+
     Renderer2D &Renderer();
 
     namespace Fonts
@@ -16,10 +18,19 @@ namespace GUI
 
     namespace FontStyleVectors
     {
+        /* Text styles:
+         * \r - default
+         * \1 - bold
+         * \2 - italic
+         * \3 - green
+         * \4 - yellow
+         * \5 - blue
+         */
         const Renderer2D::Text::StyleVector &Main();
     }
 
 
+    // High level
 
     void WriteLine(std::string_view line); // Line feed is automatically added at the end.
 

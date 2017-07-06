@@ -61,6 +61,8 @@ static int log_position = 0;
 
 namespace GUI
 {
+    // Low level
+
     Renderer2D &Renderer() {return *renderer;}
 
     namespace Fonts
@@ -73,6 +75,9 @@ namespace GUI
     {
         const Renderer2D::Text::StyleVector &Main() {return main_font_style_vec;}
     }
+
+
+    // High level
 
     void WriteLine(std::string_view line) // Line feed is automatically added at the end.
     {
@@ -134,8 +139,12 @@ void Boot()
 
     main_font_style_vec = renderer->Text()
         .color({1,1,1})
+        .shadow({1,1}).shadow_color({0.1,0.1,0.1})
         .configure_style(1).bold_aligned(1)
         .configure_style(2).italic(0.25)
+        .configure_style(3).color({0.2,1,0.2})
+        .configure_style(4).color({1,1,0.2})
+        .configure_style(5).color({1,0.2,0.2})
         .export_styles();
 
     Sys::SetCurrentFunction(Main);
@@ -182,15 +191,15 @@ void Main()
         Graphics::Clear();
 
         // This separates log from map and stats;
-        renderer->Sprite({float(Cfg::log_x), 0}, {1,(float)screen_size.y}).color({0.5,0.5,0.5});
+        renderer->Sprite({float(Cfg::log_x), 0}, {1,float(screen_size.y)}).color({0.5,0.5,0.5});
 
         // Log lines
         if (log_lines.size())
         {
-            for (int i = 0; Cfg::log_text_margin_bottom + main_font.LineSkip()*(i-1) < screen_size.y && i + log_position / main_font.LineSkip() < int(log_lines.size()); i++)
+            int visible_line_count = std::min(int(log_lines.size()), int(std::lround(std::ceil(log_position / float(main_font.LineSkip())))) + screen_size.y / main_font.LineSkip() + 2);
+            for (int i = 0; i < visible_line_count; i++)
             {
-                fvec2 line_pos(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y)));
-                renderer->Text(line_pos, log_lines[log_lines.size() - 1 - i - log_position / main_font.LineSkip()])
+                renderer->Text({float(Cfg::log_x + Cfg::log_text_margin_left), std::round(screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y))}, log_lines[log_lines.size() - 1 - i - log_position / main_font.LineSkip()])
                     .styles(main_font_style_vec)
                     .align_h(-1).align_v(-1);
             }
