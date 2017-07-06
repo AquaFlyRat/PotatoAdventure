@@ -26,6 +26,7 @@ namespace Backend
 		std::string name;
 		Height general_height;
 		Abilitys ability;
+		std::string physical_desc;
 
 		std::string GenerateName();
 		std::string GenerateAbilityDescription();
