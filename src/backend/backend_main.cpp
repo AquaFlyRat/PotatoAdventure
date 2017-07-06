@@ -14,5 +14,6 @@ namespace Backend
     {
         WorldGenerator worldGen;
         World* world = worldGen.GenerateWorld();
+        (void)world; // Eliminates `unused variable` warning.
     }
 }
