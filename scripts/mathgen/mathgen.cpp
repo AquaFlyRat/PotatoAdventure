@@ -6,7 +6,7 @@
 #include <sstream>
 
 // ---------------------------- UPDATE THIS WHEN YOU CHANGE THE CODE
-#define VERSION "2.3.1"
+#define VERSION "2.3.2"
 // ---------------------------- UPDATE THIS WHEN YOU CHANGE THE CODE
 
 std::ofstream out_file("math.h");
@@ -326,7 +326,7 @@ using type = T;
             l ";}\n";
 
             // Constructors
-            l "constexpr vec() {}\n"; // Default
+            l "vec() = default;\n"; // Default
             l "explicit constexpr vec(T obj) : "; // Same initializer for each component.
             for (int i = 0; i < sz; i++)
             {

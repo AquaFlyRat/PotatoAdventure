@@ -1,7 +1,7 @@
 #ifndef MATH_H_INCLUDED
 #define MATH_H_INCLUDED
 
-// Version 2.3.1 by HolyBlackCat
+// Version 2.3.2 by HolyBlackCat
 
 #include <algorithm>
 #include <cmath>
@@ -511,7 +511,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py) : x(px), y(py) {}
             template <typename TT> constexpr vec(vec2<TT> obj) : x(obj.x), y(obj.y) {}
@@ -564,7 +564,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz) : x(px), y(py), z(pz) {}
             template <typename TT> constexpr vec(vec3<TT> obj) : x(obj.x), y(obj.y), z(obj.z) {}
@@ -619,7 +619,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z || (bool)w;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj), w(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz, decltype(x) pw) : x(px), y(py), z(pz), w(pw) {}
             template <typename TT> constexpr vec(vec4<TT> obj) : x(obj.x), y(obj.y), z(obj.z), w(obj.w) {}
@@ -673,7 +673,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py) : x(px), y(py) {}
             template <typename TT> constexpr vec(vec2<TT> obj) : x(obj.x), y(obj.y) {}
@@ -762,7 +762,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz) : x(px), y(py), z(pz) {}
             template <typename TT> constexpr vec(vec3<TT> obj) : x(obj.x), y(obj.y), z(obj.z) {}
@@ -833,7 +833,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z || (bool)w;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj), w(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz, decltype(x) pw) : x(px), y(py), z(pz), w(pw) {}
             template <typename TT> constexpr vec(vec4<TT> obj) : x(obj.x), y(obj.y), z(obj.z), w(obj.w) {}
@@ -900,7 +900,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py) : x(px), y(py) {}
             template <typename TT> constexpr vec(vec2<TT> obj) : x(obj.x), y(obj.y) {}
@@ -961,7 +961,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz) : x(px), y(py), z(pz) {}
             template <typename TT> constexpr vec(vec3<TT> obj) : x(obj.x), y(obj.y), z(obj.z) {}
@@ -1074,7 +1074,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z || (bool)w;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj), w(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz, decltype(x) pw) : x(px), y(py), z(pz), w(pw) {}
             template <typename TT> constexpr vec(vec4<TT> obj) : x(obj.x), y(obj.y), z(obj.z), w(obj.w) {}
@@ -1175,7 +1175,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py) : x(px), y(py) {}
             template <typename TT> constexpr vec(vec2<TT> obj) : x(obj.x), y(obj.y) {}
@@ -1236,7 +1236,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz) : x(px), y(py), z(pz) {}
             template <typename TT> constexpr vec(vec3<TT> obj) : x(obj.x), y(obj.y), z(obj.z) {}
@@ -1306,7 +1306,7 @@ namespace Math
             template <typename I> T &operator[](I pos) {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: static T ret; ret = {}; return ret;}}
             template <typename I> constexpr T operator[](I pos) const {switch (pos) {case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: return T{};}}
             explicit constexpr operator bool() const {return (bool)x || (bool)y || (bool)z || (bool)w;}
-            constexpr vec() {}
+            vec() = default;
             explicit constexpr vec(T obj) : x(obj), y(obj), z(obj), w(obj) {}
             constexpr vec(decltype(x) px, decltype(x) py, decltype(x) pz, decltype(x) pw) : x(px), y(py), z(pz), w(pw) {}
             template <typename TT> constexpr vec(vec4<TT> obj) : x(obj.x), y(obj.y), z(obj.z), w(obj.w) {}
