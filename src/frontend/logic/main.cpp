@@ -23,10 +23,13 @@ namespace Cfg
     static constexpr int log_x = 146, log_width = 334,
                          log_text_margin_bottom = 34, log_text_margin_left = 8, log_text_margin_right = 8,
                          log_text_width = log_width - log_text_margin_left - log_text_margin_right,
-                         log_text_height = 270-log_text_margin_bottom;
+                         log_text_height = 270-log_text_margin_bottom,
+                         log_scrollbar_min_height = 16;
 
     static constexpr float log_text_typing_speed = 0.4, log_text_typing_speed_high = 2,
-                           log_text_insertion_offset_pixel_speed = 0.25, log_text_insertion_offset_frac_change_per_frame = 0.025;
+                           log_text_insertion_offset_pixel_speed = 0.25, log_text_insertion_offset_frac_change_per_frame = 0.025,
+                           log_scroll_speed_drag_factor = 0.05,
+                           log_scroll_pos_reset_pixel_speed = 2, log_scroll_pos_reset_frac_change_per_frame = 0.05;
 
     static constexpr fvec3 color_log_background(0,0,0),
                            color_log_boundary(0.5,0.5,0.5),
@@ -158,10 +161,14 @@ void Main()
     float log_queue_current_str_pos = 0;
     int log_queue_front_visible_char_count = -1;
 
-    int log_position = 0;
+    float log_position = 0, log_cur_scroll_speed = 0;
 
-    int log_pixel_len;
-    int log_scrollbar_height;
+    int log_text_pixel_height, log_scrollbar_height;
+
+    bool log_grabbed = 0;
+    float log_grab_y;
+    bool log_mouse_moved_since_grab;
+    bool log_resetting_pos = 0;
 
     const int text_input_y = screen_size.y - Cfg::log_text_margin_bottom + main_font.LineSkip();
 
@@ -180,9 +187,12 @@ void Main()
             {
                 log_lines.emplace_back((std::string &&)log_queue.front());
                 log_queue.pop_front();
-                log_tmp_offset_y += 1;
                 log_queue_current_str_pos = 0;
                 log_queue_front_visible_char_count = -1;
+                if (log_position == 0)
+                    log_tmp_offset_y += 1;
+                else
+                    log_position += main_font.LineSkip();
             }
             else
                 log_queue_current_str_pos += (Input::AnyKeyDown() ? Cfg::log_text_typing_speed_high : Cfg::log_text_typing_speed);
@@ -194,17 +204,51 @@ void Main()
                 log_tmp_offset_y = 0;
         }
 
-        log_pixel_len = std::max(1u, log_lines.size()) * main_font.LineSkip();
-        log_scrollbar_height = std::min(screen_size.y, (int)std::lround(screen_size.y * Cfg::log_text_height / float(log_pixel_len)));
+        log_text_pixel_height = log_lines.size() * main_font.LineSkip();
+        log_scrollbar_height = clamp(std::lround(screen_size.y * Cfg::log_text_height / float(max(1, log_text_pixel_height))), Cfg::log_scrollbar_min_height, screen_size.y);
 
-        //log_position += (Input::KeyDown(Input::Key_Up()) - Input::KeyDown(Input::Key_Down()));
+        if (log_grabbed)
+        {
+            if (Input::MouseButtonReleased(1))
+            {
+                log_grabbed = 0;
+                log_cur_scroll_speed = Input::MousePosDelta().y;
+                if (!log_mouse_moved_since_grab)
+                    log_resetting_pos = 1;
+            }
+            else
+            {
+            log_position = log_grab_y - (screen_size.y - Input::MousePos().y);
+            if (Input::MousePosDelta().any())
+                log_mouse_moved_since_grab = 1;
+            }
+        }
+        else if (Input::MouseButtonPressed(1) && !log_resetting_pos)
+        {
+            log_grabbed = 1;
+            log_grab_y = log_position + screen_size.y - Input::MousePos().y;
+            log_mouse_moved_since_grab = 0;
+        }
+
+
+        if (!log_grabbed)
+        {
+            log_position += log_cur_scroll_speed;
+            log_cur_scroll_speed *= 1 - Cfg::log_scroll_speed_drag_factor;
+        }
+        if (log_resetting_pos)
+        {
+            log_position -= Cfg::log_scroll_pos_reset_pixel_speed + log_position * Cfg::log_scroll_pos_reset_frac_change_per_frame;
+            if (log_position <= 0)
+                log_resetting_pos = 0;
+        }
 
         if (log_position > int(log_lines.size()) * main_font.LineSkip() - Cfg::log_text_height)
             log_position = int(log_lines.size()) * main_font.LineSkip() - Cfg::log_text_height;
         if (log_position < 0)
             log_position = 0;
 
-        //if (Input::KeyDown(Input::Key_Enter())) GUI::WriteLine("Meow!");
+        ""; if (Input::KeyPressed(Input::Key_Enter())) GUI::WriteLine("Meow!");
     };
     auto Render = [&]
     {
@@ -221,7 +265,7 @@ void Main()
             int min_visible_line = std::max(0, int(std::lround(log_position / float(main_font.LineSkip())) - 2));
             for (int i = min_visible_line; i < max_visible_line; i++)
             {
-                renderer->Text({float(Cfg::log_x + Cfg::log_text_margin_left), log_position + std::round(screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y))}, log_lines[log_lines.size() - 1 - i])
+                renderer->Text({float(Cfg::log_x + Cfg::log_text_margin_left), std::round(log_position + screen_size.y - Cfg::log_text_margin_bottom - main_font.LineSkip() * (i + 1 - log_tmp_offset_y))}, log_lines[log_lines.size() - 1 - i])
                     .styles(main_font_style_vec)
                     .align_h(-1).align_v(-1);
             }
@@ -230,7 +274,7 @@ void Main()
         // Current unfinished line
         if (log_queue.size())
         {
-            renderer->Text(fvec2(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom + main_font.LineSkip() * log_tmp_offset_y)), log_queue.front())
+            renderer->Text(fvec2(Cfg::log_x + Cfg::log_text_margin_left, std::round(screen_size.y - Cfg::log_text_margin_bottom + main_font.LineSkip() * log_tmp_offset_y + log_position)), log_queue.front())
                 .styles(main_font_style_vec)
                 .align_h(-1).align_v(-1)
                 .character_count(log_queue_current_str_pos);
@@ -248,9 +292,7 @@ void Main()
         renderer->Sprite({float(Cfg::log_x+Cfg::log_width - 2), 0}, {1,float(screen_size.y)}).color(Cfg::color_log_boundary);
 
         // Scrollbar
-        renderer->Sprite(fvec2(Cfg::log_x + Cfg::log_width - 1,
-                               screen_size.y - log_scrollbar_height - std::min(screen_size.y - log_scrollbar_height,
-                                                                               (int)std::lround(screen_size.y * log_position / float(log_pixel_len)))),
+        renderer->Sprite(fvec2(Cfg::log_x + Cfg::log_width - 1, screen_size.y - log_scrollbar_height - (screen_size.y - log_scrollbar_height) * (log_position / float(log_text_pixel_height - Cfg::log_text_height))),
                          fvec2(1, log_scrollbar_height))
             .color(Cfg::color_log_text);
     };
