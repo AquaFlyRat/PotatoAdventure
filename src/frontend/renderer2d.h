@@ -287,6 +287,7 @@ class Renderer2D
             Assert("2D renderer: Attempt to render a sprite with no texture nor color specified.", have_texture || have_color);
             Assert("2D renderer: Attempt to render a sprite with absolute corner coodinates with a center specified.", absolute_pos + have_center < 2);
             Assert("2D renderer: Attempt to render a sprite with both texture and color specified, but without a mixing factor.", (have_texture && have_color) <= have_tex_color_fac);
+            Assert("2D renderer: Attempt to render a sprite with a matrix but without a center specified.", have_matrix <= have_center);
 
             if (absolute_pos)
             {
