@@ -213,7 +213,7 @@ class Renderer2D
             sprite_colors[3] = d;
             return (rvalue)*this;
         }
-        rvalue mix(float x) // 0 - fill with color (default if color is provided), 1 - use texture
+        rvalue mix(float x) // 0 - fill with color, 1 - use texture
         {
             Assert("2D renderer: Sprite color mix factor specified twice.", !have_tex_color_fac);
             have_tex_color_fac = 1;
